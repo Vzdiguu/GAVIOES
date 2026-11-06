@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0d0c0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gaviões">
+<link rel="manifest" href="/painel/manifest.webmanifest">
+<link rel="icon" href="/painel/icons/app-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/painel/icons/app-192.png">
+<title>Painel Gaviões</title>
+<style>
+@font-face{font-family:TekoLocal;src:url('/templates/yootheme/fonts/teko-b7970bcd.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:HeeboLocal;src:url('/templates/yootheme/fonts/heebo-1070792d.woff2') format('woff2');font-weight:100 900;font-display:swap}
+:root{--black:#0d0c0f;--panel:#17151a;--panel2:#201d24;--beige:#f3dfc5;--red:#e30613;--yellow:#f1c928;--ok:#2fd27a;--bad:#ff6b75;--mut:#9c96a0;--line:rgba(255,255,255,.14);--r:22px}
+*{box-sizing:border-box}html,body{margin:0}html{background:var(--black)}
+body{background:var(--black);color:#fff;font:14px/1.5 HeeboLocal,Arial,sans-serif;font-variant-numeric:tabular-nums;overflow-x:hidden}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}.hide{display:none!important}
+::selection{background:var(--red);color:#fff}:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.kick{display:block;color:var(--yellow);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:42px;padding:0 18px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:transparent;color:#fff;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;transition:.22s}
+.btn:hover{border-color:#fff}.btn.pri{background:var(--red);border-color:var(--red);box-shadow:0 10px 25px rgba(227,6,19,.2)}.btn.pri:hover{background:#ff1825;border-color:#ff1825;transform:translateY(-2px)}
+.brand-text{display:block;color:var(--red);font-weight:900;letter-spacing:.12em;text-decoration:none}
+.lg-brand .brand-text{width:max-content;margin-bottom:clamp(30px,6vw,70px);font-size:24px}
+header .brand-text{font-size:20px}
+/* login */
+#login{position:fixed;inset:0;z-index:50;overflow:auto;background:radial-gradient(900px 520px at 85% -10%,rgba(227,6,19,.22),transparent 60%),radial-gradient(700px 420px at 0% 110%,rgba(241,201,40,.07),transparent 60%),var(--black)}
+.lg-wrap{min-height:100%;display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,5vw,80px);align-items:center;width:min(calc(100% - 40px),1180px);margin:0 auto;padding:40px 0}
+.lg-brand img{display:block;width:170px;height:auto;margin-bottom:clamp(30px,6vw,70px)}
+.lg-copy h1{margin:14px 0 0;font-size:clamp(54px,8.5vw,118px);font-weight:800;letter-spacing:-.075em;line-height:.8;text-transform:uppercase;color:var(--beige);text-shadow:0 3px 18px rgba(0,0,0,.38)}
+.lg-copy h1 em{color:var(--red);font-style:normal}
+.lg-copy p{max-width:380px;margin:24px 0 0;color:#aaa5aa;font-size:14px}
+.lg-card{padding:clamp(24px,4vw,40px);border:1px solid rgba(255,255,255,.14);border-radius:28px;background:linear-gradient(145deg,#1c1920,#141217);box-shadow:0 22px 70px rgba(0,0,0,.35);animation:up .6s cubic-bezier(.2,.8,.2,1)}
+.lg-card h2{margin:10px 0 22px;font-size:clamp(30px,3.4vw,44px);font-weight:800;letter-spacing:-.07em;line-height:.9;text-transform:uppercase}
+.lg-card label{display:block;margin-bottom:8px;color:#b2abb5;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.pwbox{position:relative}.pwbox input{padding-right:84px}
+.f-in{width:100%;min-height:52px;padding:0 15px;border:1px solid rgba(255,255,255,.16);border-radius:16px;outline:0;background:#111014;color:#fff;transition:.2s}
+.f-in:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(227,6,19,.13)}.f-in::placeholder{color:#625d66}
+.pwtog{position:absolute;right:8px;top:8px;height:36px;padding:0 12px;border:0;border-radius:999px;background:#242027;color:#b8b0ba;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.pwtog:hover{color:#fff}
+.lg-card .btn{width:100%;min-height:52px;margin-top:16px}
+.err{min-height:20px;margin-top:12px;color:var(--bad);font-size:12px;font-weight:700}
+.lg-foot{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);color:#756e79;font-size:11px}
+/* topo (igual ao checkout) */
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-height:78px;padding:10px clamp(16px,4vw,48px);background:rgba(13,12,15,.82);border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+header .brand img{display:block;width:140px;height:auto}
+.mark{display:flex;flex-direction:column;line-height:1.1;color:#817a84;font-size:9px;font-weight:800;letter-spacing:.18em}.mark strong{color:#fff;font-size:11px;letter-spacing:.1em}
+.sp{flex:1}
+.live{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;color:#aaa4aa;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--yellow)}
+.live.on .dot{background:var(--ok);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,210,122,.55)}70%,100%{box-shadow:0 0 0 9px rgba(47,210,122,0)}}
+header .btn{min-height:36px;padding:0 14px}
+main{width:min(calc(100% - 32px),1280px);margin:0 auto;padding:clamp(24px,4vw,48px) 0 80px}
+.ttl{margin:0 0 26px}.ttl h1{margin:10px 0 0;font-size:clamp(40px,6vw,76px);font-weight:800;letter-spacing:-.075em;line-height:.85;text-transform:uppercase;color:var(--beige)}.ttl h1 em{color:var(--red);font-style:normal}
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.kpi{padding:20px 20px 18px;border:1px solid rgba(255,255,255,.14);border-radius:var(--r);background:linear-gradient(145deg,#1c1920,#141217)}
+.kpi small{display:block;color:#817a86;font-size:9px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+.kpi b{display:block;margin-top:8px;font-family:TekoLocal,Impact,sans-serif;font-size:46px;font-weight:400;line-height:.95;color:#fff}
+.kpi span{display:block;margin-top:6px;color:#8f8892;font-size:11px}
+.kpi.hero{background:linear-gradient(145deg,#2b1519,#17151a);border-color:rgba(227,6,19,.45)}.kpi.hero b{color:var(--beige)}
+.kpi.bump{animation:bump .8s}@keyframes bump{30%{transform:scale(1.035);border-color:var(--yellow)}}
+.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;margin-top:12px}
+.card{padding:22px;border:1px solid rgba(255,255,255,.14);border-radius:var(--r);background:linear-gradient(145deg,#1c1920,#141217)}
+.card h2{margin:0 0 16px;color:#817a86;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+.legend{display:flex;gap:16px;margin-top:8px;color:#8f8892;font-size:11px}.legend i{display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:3px}
+.bars{display:grid;gap:14px}.bar-row{display:grid;grid-template-columns:1fr auto;gap:5px 10px;font-size:13px;font-weight:600}
+.bar-row em{color:#8f8892;font-style:normal;font-weight:400;font-size:12px}
+.bar-row .track{grid-column:1/-1;display:flex;height:8px;border-radius:99px;background:#2a2630;overflow:hidden}.track i{display:block;height:100%}
+/* filtros */
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 12px}
+#q{flex:1;min-width:220px}.filters .f-in{width:auto;min-height:46px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{min-height:40px;padding:0 16px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#17151a;color:#aaa3ad;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;transition:.2s}
+.tab:hover{border-color:#fff;color:#fff}.tab.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 8px 20px rgba(227,6,19,.2)}.tab span{margin-left:7px;opacity:.7}
+/* tabela */
+.wrap{border:1px solid rgba(255,255,255,.14);border-radius:var(--r);background:linear-gradient(145deg,#1c1920,#141217);overflow:hidden}
+.scroll{overflow-x:auto}table{width:100%;min-width:1000px;border-collapse:collapse}
+th{padding:16px 14px;border-bottom:1px solid var(--line);color:#817a86;font-size:9px;font-weight:900;letter-spacing:.14em;text-align:left;text-transform:uppercase;white-space:nowrap}
+td{padding:14px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:13px}
+tr.row{cursor:pointer;transition:background .2s}tr.row:hover td{background:#1f1c23}
+tr.flash td{animation:flash 2.8s}@keyframes flash{0%,35%{background:rgba(241,201,40,.2)}100%{background:transparent}}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.badge.paid{background:rgba(47,210,122,.14);color:var(--ok)}.badge.pending{background:rgba(241,201,40,.14);color:var(--yellow)}.badge.expired{background:rgba(227,6,19,.16);color:var(--bad)}
+.badge.pending::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 1.4s infinite}@keyframes blink{50%{opacity:.25}}
+.name b{display:block;font-size:14px}.sub{color:#8f8892;font-size:11px}.stale{color:var(--yellow)}.tag{margin-left:8px;color:var(--ok);font-size:10px;font-weight:800}
+.mini{display:inline-flex;align-items:center;min-height:32px;padding:0 13px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:transparent;color:#fff;font-size:9px;font-weight:900;letter-spacing:.1em;text-decoration:none;text-transform:uppercase;transition:.2s}
+.mini:hover{border-color:#fff}.mini.wa{border-color:rgba(47,210,122,.5);color:var(--ok)}.mini.wa:hover{background:var(--ok);color:#06210f;border-color:var(--ok)}
+tr.detail td{padding:18px 20px;background:#121014}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px 22px}
+.dgrid label{display:block;margin-bottom:4px;color:#817a86;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.dgrid b{font-weight:600;word-break:break-all}
+.dgrid input[type=checkbox]{accent-color:var(--red);width:16px;height:16px;vertical-align:-3px;margin-right:6px}
+textarea.f-in{min-height:76px;padding:12px 15px;resize:vertical}
+.empty{padding:50px 20px;color:#8f8892;text-align:center}.more{display:flex;margin:16px auto 0}
+/* avisos */
+#toasts{position:fixed;right:18px;bottom:18px;z-index:60;display:grid;gap:10px;max-width:min(92vw,380px)}
+.toast{padding:14px 18px;border:1px solid var(--line);border-radius:16px;background:#201d24;box-shadow:0 15px 30px rgba(0,0,0,.4);font-size:13px;animation:up .35s}
+.toast.paid{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok),0 15px 30px rgba(0,0,0,.4)}
+@media(max-width:860px){
+.lg-wrap{grid-template-columns:1fr;gap:28px}.lg-copy p{display:none}
+.mark{display:none}.grid2{grid-template-columns:1fr}table{min-width:0}thead{display:none}
+tr.row{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;padding:16px;border-bottom:1px solid var(--line)}
+tr.row td{padding:0;border:0}tr.row td::before{content:attr(data-l);display:block;color:#817a86;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+tr.row td.c-name,tr.row td.c-act{grid-column:1/-1}tr.detail,tr.detail td{display:block}
+#toasts{left:12px;right:12px;top:84px;bottom:auto;max-width:none}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ===== gavetas (seções) ===== */
+.nav{display:flex;gap:6px;margin-left:8px}
+.nav a{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 16px;border:1px solid transparent;border-radius:999px;color:#aaa3ad;font-size:10px;font-weight:900;letter-spacing:.1em;text-decoration:none;text-transform:uppercase;white-space:nowrap;transition:.2s}
+.nav a:hover{color:#fff;border-color:rgba(255,255,255,.2)}.nav a.on{background:var(--red);color:#fff;box-shadow:0 8px 20px rgba(227,6,19,.22)}
+.nb{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 6px;border-radius:99px;background:var(--yellow);color:#111;font-size:10px}
+.view{animation:up .4s cubic-bezier(.2,.8,.2,1)}
+.ttl{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.per{width:auto;min-height:46px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}.kpi{min-width:0}
+.kpi b{font-size:clamp(30px,3.3vw,42px);white-space:nowrap}
+.feed{display:grid;gap:2px}
+.fi{display:grid;grid-template-columns:12px 1fr auto;gap:12px;align-items:start;padding:11px 0;border-bottom:1px solid var(--line);font-size:13px}
+.fi:last-child{border:0}.fi i{width:9px;height:9px;margin-top:6px;border-radius:50%;background:var(--yellow)}.fi.paid i{background:var(--ok)}
+.fi .sub{display:block}.fi em{color:#817a86;font-size:11px;font-style:normal;white-space:nowrap}
+.sech{margin:0 0 14px;color:#817a86;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.sech span{margin-left:8px;color:var(--yellow)}
+.sumline{margin-bottom:22px;color:#aaa3ad;font-size:15px}.sumline b{color:var(--beige);font-size:20px}
+.cobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;margin-bottom:26px}
+.cob{display:grid;grid-template-columns:1fr auto;gap:12px 16px;padding:18px 20px;border:1px solid rgba(255,255,255,.14);border-radius:var(--r);background:linear-gradient(145deg,#1c1920,#141217)}
+.cob.done{opacity:.6}.cob b{display:block}.cv{text-align:right}.cv b{font-family:TekoLocal,Impact,sans-serif;font-size:30px;font-weight:400;line-height:1}
+.ca{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;border-top:1px solid var(--line)}
+.chk{display:inline-flex;align-items:center;gap:8px;color:#aaa3ad;font-size:11px;cursor:pointer}.chk input{accent-color:var(--red);width:17px;height:17px}
+.t2{min-width:620px}.t2 td b{display:block}.track.slim{display:flex;height:6px;margin-top:8px;border-radius:99px;background:#2a2630;overflow:hidden;max-width:240px}.track i{display:block;height:100%}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.plans .card b{display:block;font-family:TekoLocal,Impact,sans-serif;font-size:38px;font-weight:400;line-height:1;color:#fff}.plans .card h2{margin-bottom:8px;color:var(--beige);font-size:13px;letter-spacing:.04em}
+.sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.sets .card{display:flex;flex-direction:column;align-items:flex-start;gap:14px}.sets .sub{font-size:13px;margin:0}
+@media(max-width:860px){
+ header{gap:10px}.nav{order:5;width:100%;margin:0;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
+ .sp{display:none}.live{margin-left:auto}.t2{min-width:560px}.t2 thead{display:table-header-group}
+ .cobs{grid-template-columns:1fr}.per{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="lg-wrap">
+    <div class="lg-copy">
+      <div class="lg-brand"><b class="brand-text">GAVIÕES</b></div>
+      <span class="kick">Área restrita</span>
+      <h1>Painel<br><em>Gaviões.</em></h1>
+      <p>Matrículas, Pix e pagamentos da rede acontecendo ao vivo, em um só lugar.</p>
+    </div>
+    <form class="lg-card" id="login-form">
+      <span class="kick">Acesso da equipe</span>
+      <h2>Entrar</h2>
+      <label for="pw">Senha</label>
+      <div class="pwbox"><input class="f-in" id="pw" type="password" placeholder="Digite sua senha" autocomplete="current-password" required><button class="pwtog" id="pwtog" type="button">Mostrar</button></div>
+      <button class="btn pri" type="submit">Entrar no painel</button>
+      <div class="err" id="login-err" role="alert"></div>
+      <div class="lg-foot">Os dados dos alunos são protegidos pela LGPD. Não compartilhe o acesso.</div>
+    </form>
+  </div>
+</div>
+
+<header class="hide" id="top">
+  <a class="brand" href="/" aria-label="Painel Academia Gaviões"><b class="brand-text">GAVIÕES</b></a>
+  <nav class="nav" id="nav" aria-label="Seções do painel">
+    <a href="#visao" data-v="visao">Visão geral</a><a href="#matriculas" data-v="matriculas">Matrículas</a><a href="#cobrancas" data-v="cobrancas">Cobranças<span class="nb hide" id="nb"></span></a><a href="#unidades" data-v="unidades">Unidades</a><a href="#ajustes" data-v="ajustes">Ajustes</a>
+  </nav>
+  <span class="sp"></span>
+  <span class="live" id="live"><i class="dot"></i><span>Conectando…</span></span>
+  <button class="btn" id="b-out">Sair</button>
+</header>
+
+<main class="hide" id="app">
+  <section class="view" id="v-visao">
+    <div class="ttl"><div><span class="kick">Visão geral</span><h1>Matrículas <em>ao vivo.</em></h1></div><select class="f-in per" data-per aria-label="Período"><option value="all">Todo o período</option><option value="today">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option></select></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="grid2">
+      <div class="card"><h2>Últimos 7 dias</h2><div id="chart"></div><div class="legend"><span><i style="background:#3a3540"></i>Pix gerados</span><span><i style="background:#2fd27a"></i>Pagos</span></div></div>
+      <div class="card"><h2>Atividade ao vivo</h2><div class="feed" id="feed"></div></div>
+    </div>
+  </section>
+
+  <section class="view hide" id="v-matriculas">
+    <div class="ttl"><div><span class="kick">Todas as matrículas</span><h1>Alunos e <em>Pix.</em></h1></div></div>
+    <div class="filters">
+      <input class="f-in" id="q" type="search" placeholder="Buscar por nome, CPF, telefone, e-mail ou unidade…">
+      <select class="f-in" id="f-unit"></select><select class="f-in per" data-per aria-label="Período"><option value="all">Todo o período</option><option value="today">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option></select>
+    </div>
+    <div class="tabs" id="tabs" style="margin-bottom:12px"></div>
+    <div class="wrap"><div class="scroll">
+      <table><thead><tr><th>Status</th><th>Aluno</th><th>CPF</th><th>Telefone</th><th>Unidade / Plano</th><th>Valor</th><th>Pix gerado</th><th>Pago em</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+      <div class="empty hide" id="empty">Nenhuma matrícula encontrada.</div>
+    </div>
+    <button class="btn more hide" id="more">Mostrar mais</button>
+  </section>
+
+  <section class="view hide" id="v-cobrancas">
+    <div class="ttl"><div><span class="kick">Recuperar vendas</span><h1>Pix <em>pendentes.</em></h1></div></div>
+    <div id="cob"></div>
+  </section>
+
+  <section class="view hide" id="v-unidades">
+    <div class="ttl"><div><span class="kick">Desempenho</span><h1>Por <em>unidade.</em></h1></div><select class="f-in per" data-per aria-label="Período"><option value="all">Todo o período</option><option value="today">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option></select></div>
+    <div class="wrap"><div class="scroll"><table class="t2"><thead><tr><th>Unidade</th><th>Pix gerados</th><th>Pagos</th><th>Pendentes</th><th>Conversão</th><th>Receita</th></tr></thead><tbody id="unitsTbl"></tbody></table></div></div>
+    <h3 class="sech" style="margin-top:28px">Planos</h3>
+    <div class="plans" id="plans"></div>
+  </section>
+
+  <section class="view hide" id="v-ajustes">
+    <div class="ttl"><div><span class="kick">Preferências</span><h1>Seu <em>painel.</em></h1></div></div>
+    <div class="sets">
+      <div class="card"><h2>Notificações no dispositivo</h2><p class="sub">Receba alertas de novos Pix e pagamentos confirmados, inclusive com o painel fechado. A ativação depende do backend de push e da permissão do navegador.</p><button class="btn pri" id="b-push" type="button">Ativar notificações</button><p class="sub" id="push-status" role="status" aria-live="polite">Verificando suporte do dispositivo…</p></div>
+      <div class="card"><h2>Instalar app</h2><p class="sub">Adicione o Painel Gaviões à tela inicial para abrir em uma janela própria.</p><button class="btn" id="b-install" type="button">Instalar app</button><p class="sub" id="install-status" role="status">A opção aparece quando o navegador permitir a instalação.</p></div>
+      <div class="card"><h2>Privacidade</h2><p class="sub">Por padrão o CPF aparece parcialmente. Mostre o número completo só quando precisar.</p><button class="btn" id="b-cpf">CPF: oculto</button></div>
+      <div class="card"><h2>Dados</h2><p class="sub">Baixe uma planilha com todas as matrículas. Faça isso de tempos em tempos como cópia de segurança.</p><a class="btn" href="/api/admin/export.csv">Exportar CSV</a></div>
+    </div>
+  </section>
+</main>
+<div id="toasts"></div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const S={orders:[],f:{q:'',status:'all',unit:'',period:'all'},open:null,reveal:false,limit:100,flash:new Set(),es:null,first:true};
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const brl=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const ts=iso=>iso?Date.parse(iso):0;
+const hm=iso=>iso?new Date(iso).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'';
+const dm=iso=>iso?new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'';
+const dayKey=t=>{const d=new Date(t);return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate()};
+const startOfDay=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
+const rel=iso=>{const s=Math.max(0,(Date.now()-ts(iso))/1000);if(s<60)return 'agora';const m=s/60;if(m<60)return `há ${Math.floor(m)} min`;const h=m/60;if(h<24)return `há ${Math.floor(h)} h`;return `há ${Math.floor(h/24)} d`};
+const span=ms=>{const m=Math.round(ms/60000);if(m<1)return Math.max(1,Math.round(ms/1000))+' s';if(m<60)return m+' min';return Math.floor(m/60)+' h '+(m%60)+' min'};
+const fone=d=>{d=String(d||'').replace(/^55(?=\d{10,11}$)/,'');return d.length===11?`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`:d.length===10?`(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`:d};
+const cpfFull=d=>d.length===11?`${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`:d;
+const cpfShow=d=>S.reveal?cpfFull(d):(d.length===11?`***.${d.slice(3,6)}.${d.slice(6,9)}-**`:d);
+const first=n=>String(n||'').trim().split(/\s+/)[0]||'';
+const LABEL={paid:'Pago',pending:'Pendente',expired:'Expirado'};
+
+/* ---------- api ---------- */
+async function api(path,opt){
+  const r=await fetch(path,{credentials:'same-origin',...opt});
+  if(r.status===401){showLogin();throw new Error('401')}
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||'Erro');
+  return j;
+}
+const post=(p,b)=>api(p,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})});
+
+const PUSH_KEY_URL='/api/admin/push/vapid-public-key';
+const PUSH_SUBSCRIPTIONS_URL='/api/admin/push/subscriptions';
+let swRegistration=null,installPrompt=null;
+function pushStatus(message){const el=$('#push-status');if(el)el.textContent=message}
+function base64UrlToBytes(value){
+  const pad='='.repeat((4-value.length%4)%4),raw=atob((value+pad).replace(/-/g,'+').replace(/_/g,'/'));
+  return Uint8Array.from(raw,c=>c.charCodeAt(0));
+}
+async function updatePushButton(){
+  const button=$('#b-push');if(!button)return;
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)||!window.isSecureContext){
+    button.disabled=true;pushStatus('Este navegador/origem não oferece push seguro. Use HTTPS e um navegador compatível.');return;
+  }
+  try{
+    swRegistration=swRegistration||await navigator.serviceWorker.ready;
+    const sub=await swRegistration.pushManager.getSubscription();
+    if(Notification.permission==='denied'){button.disabled=true;pushStatus('Permissão bloqueada. Altere as permissões deste site nas configurações do navegador.');return}
+    button.disabled=false;button.textContent=sub?'Desativar notificações':'Ativar notificações';
+    if(sub){
+      try{await post(PUSH_SUBSCRIPTIONS_URL,{action:'subscribe',subscription:sub.toJSON()});pushStatus('Este dispositivo está inscrito e sincronizado com o backend.')}
+      catch{pushStatus('Push permitido no navegador, mas a inscrição ainda não foi sincronizada com o backend.')}
+    }else pushStatus('Notificações ainda não ativadas neste dispositivo.');
+  }catch{button.disabled=true;pushStatus('Não foi possível inicializar o serviço de notificações.');}
+}
+async function togglePush(){
+  const button=$('#b-push');button.disabled=true;
+  try{
+    if(!swRegistration)swRegistration=await navigator.serviceWorker.ready;
+    const current=await swRegistration.pushManager.getSubscription();
+    if(current){
+      await post(PUSH_SUBSCRIPTIONS_URL,{action:'unsubscribe',endpoint:current.endpoint});
+      await current.unsubscribe();
+      pushStatus('Notificações desativadas neste dispositivo.');
+    }else{
+      const permission=Notification.permission==='default'?await Notification.requestPermission():Notification.permission;
+      if(permission!=='granted')throw new Error(permission==='denied'?'Permissão negada pelo navegador.':'Permissão não concedida.');
+      const keyResult=await api(PUSH_KEY_URL);
+      const publicKey=keyResult.publicKey||keyResult.vapidPublicKey;
+      if(!publicKey)throw new Error('Backend não forneceu a chave pública VAPID.');
+      const subscription=await swRegistration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64UrlToBytes(publicKey)});
+      await post(PUSH_SUBSCRIPTIONS_URL,{action:'subscribe',subscription:subscription.toJSON()});
+      pushStatus('Pronto. Este dispositivo receberá os alertas enviados pelo backend.');
+    }
+  }catch(error){pushStatus(error.message||'Não foi possível atualizar a inscrição push.');}
+  finally{await updatePushButton()}
+}
+$('#b-push').addEventListener('click',togglePush);
+addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;const b=$('#b-install');b.disabled=false;$('#install-status').textContent='Pronto para instalar neste dispositivo.'});
+addEventListener('appinstalled',()=>{installPrompt=null;$('#b-install').disabled=true;$('#install-status').textContent='Aplicativo instalado.'});
+$('#b-install').addEventListener('click',async()=>{
+  if(!installPrompt){$('#install-status').textContent='No iPhone/iPad: toque em Compartilhar e depois em “Adicionar à Tela de Início”. Em outros navegadores, use o menu “Instalar app” ou “Adicionar à tela inicial”.';return}
+  installPrompt.prompt();const result=await installPrompt.userChoice;installPrompt=null;$('#b-install').disabled=true;
+  $('#install-status').textContent=result.outcome==='accepted'?'Instalação iniciada.':'Instalação não concluída.';
+});
+async function initPWA(){
+  if(!('serviceWorker' in navigator)||!window.isSecureContext)return;
+  if(matchMedia('(display-mode: standalone)').matches||navigator.standalone===true){$('#install-status').textContent='Aplicativo instalado.';$('#b-install').disabled=true;}
+  try{swRegistration=await navigator.serviceWorker.register('/painel/sw.js',{scope:'/painel/'});await navigator.serviceWorker.ready;}
+  catch(error){console.error('[PWA] Falha ao registrar service worker:',error)}
+}
+initPWA();
+
+
+/* ---------- login ---------- */
+function showLogin(){
+  if(S.es){S.es.close();S.es=null}
+  $('#login').classList.remove('hide');$('#top').classList.add('hide');$('#app').classList.add('hide');$('#pw').focus();
+}
+$('#login-form').addEventListener('submit',async e=>{
+  e.preventDefault();$('#login-err').textContent='';
+  try{await post('/api/admin/login',{password:$('#pw').value});$('#pw').value='';await start()}
+  catch(err){$('#login-err').textContent=err.message==='401'?'Senha incorreta.':err.message}
+});
+$('#pwtog').onclick=()=>{const p=$('#pw'),s=p.type==='password';p.type=s?'text':'password';$('#pwtog').textContent=s?'Ocultar':'Mostrar'};
+$('#b-out').onclick=async()=>{try{await post('/api/admin/logout')}catch{}showLogin()};
+
+/* ---------- feedback de ações e privacidade ---------- */
+$('#b-cpf').onclick=()=>{S.reveal=!S.reveal;$('#b-cpf').textContent='CPF: '+(S.reveal?'visível':'oculto');renderRows()};
+
+/* ---------- dados em tempo real ---------- */
+function upsert(o){
+  const i=S.orders.findIndex(x=>x.id===o.id);
+  if(i>=0){
+    const prev=S.orders[i];S.orders[i]=o;
+    if(prev.status!=='paid'&&o.status==='paid'){
+      S.flash.add(o.id);bumpKpis();
+    }
+  }else{
+    S.orders.push(o);S.flash.add(o.id);
+    // Novos pedidos são notificados pelo backend via Web Push, não por toast no painel.
+  }
+  setTimeout(()=>S.flash.delete(o.id),2800);
+  render();
+}
+function bumpKpis(){const el=$('#kpis');el.classList.remove('bump');void el.offsetWidth;document.querySelectorAll('.kpi').forEach(k=>{k.classList.remove('bump');void k.offsetWidth;k.classList.add('bump')})}
+function setLive(on){const l=$('#live');l.classList.toggle('on',on);l.lastChild.textContent=on?'Ao vivo':'Reconectando…'}
+function connect(){
+  if(S.es)S.es.close();
+  const es=S.es=new EventSource('/api/admin/stream');
+  es.onopen=()=>{setLive(true);load()};
+  es.addEventListener('order',e=>upsert(JSON.parse(e.data)));
+  es.addEventListener('delete',e=>{const {id}=JSON.parse(e.data);S.orders=S.orders.filter(o=>o.id!==id);render()});
+  es.onerror=()=>{setLive(false);if(es.readyState===2){setTimeout(async()=>{try{await api('/api/admin/orders');connect()}catch{}},3000)}};
+}
+async function load(){const j=await api('/api/admin/orders');S.orders=j.orders;S.first=false;render()}
+async function start(){
+  await load();
+  await updatePushButton();
+  $('#login').classList.add('hide');$('#top').classList.remove('hide');$('#app').classList.remove('hide');
+  route();connect();
+}
+
+/* ---------- filtros ---------- */
+function inPeriod(o){
+  const p=S.f.period;if(p==='all')return true;const t=ts(o.createdAt);
+  if(p==='today')return t>=startOfDay(Date.now());
+  return t>=Date.now()-Number(p)*864e5;
+}
+function base(){ // período + unidade + busca (sem status)
+  const q=S.f.q.trim().toLowerCase(),qd=q.replace(/\D/g,'');
+  return S.orders.filter(o=>{
+    if(!inPeriod(o))return false;
+    if(S.f.unit&&o.unitName!==S.f.unit)return false;
+    if(!q)return true;
+    return o.name.toLowerCase().includes(q)||o.email.includes(q)||o.unitName.toLowerCase().includes(q)||o.plan.toLowerCase().includes(q)||(qd&&(o.cpf.includes(qd)||o.phone.includes(qd)));
+  });
+}
+$('#q').oninput=e=>{S.f.q=e.target.value;S.limit=100;render()};
+$('#f-unit').onchange=e=>{S.f.unit=e.target.value;S.limit=100;render()};
+document.querySelectorAll('[data-per]').forEach(s=>s.onchange=e=>{S.f.period=e.target.value;S.limit=100;render()});
+$('#more').onclick=()=>{S.limit+=100;renderRows()};
+
+/* ---------- render ---------- */
+const VIEWS=['visao','matriculas','cobrancas','unidades','ajustes'];
+function route(){
+  const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'visao';S.view=v;
+  VIEWS.forEach(x=>$('#v-'+x).classList.toggle('hide',x!==v));
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
+  render();window.scrollTo(0,0);
+}
+addEventListener('hashchange',route);
+function render(){
+  const v=S.view||'visao';
+  if(v==='visao'){renderKpis();renderChart();renderFeed()}
+  if(v==='matriculas'){renderFilters();renderRows()}
+  if(v==='cobrancas')renderCob();
+  if(v==='unidades')renderUnitsView();
+  const pend=S.orders.filter(o=>o.status==='pending').length,nb=$('#nb');
+  nb.textContent=pend;nb.classList.toggle('hide',!pend);
+  document.querySelectorAll('[data-per]').forEach(s=>s.value=S.f.period);
+  document.title=(pend?`(${pend}) `:'')+'Painel Gaviões';
+}
+function renderFeed(){
+  const ev=[];S.orders.forEach(o=>{ev.push({t:ts(o.createdAt),k:'gen',o});if(o.paidAt)ev.push({t:ts(o.paidAt),k:'paid',o})});
+  ev.sort((a,b)=>b.t-a.t);
+  $('#feed').innerHTML=ev.slice(0,9).map(({t,k,o})=>{const iso=new Date(t).toISOString();
+    return `<div class="fi ${k}"><i></i><div><b>${esc(first(o.name)||'Aluno')}</b> ${k==='paid'?'pagou':'gerou um Pix de'} <b>${brl(o.value)}</b><span class="sub">${esc(o.unitName)} · ${esc(o.plan)}</span></div><em data-t="${iso}">${rel(iso)}</em></div>`}).join('')||'<span class="sub">Nada por aqui ainda.</span>';
+}
+function renderCob(){
+  const L=S.orders.filter(o=>o.status==='pending').sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));
+  const cold=L.filter(o=>Date.now()-ts(o.createdAt)>30*60000),warm=L.filter(o=>!cold.includes(o)),open=L.reduce((a,o)=>a+o.value,0);
+  const card=o=>`<article class="cob ${o.contacted?'done':''}"><div><b>${esc(o.name||'—')}</b><span class="sub">${esc(o.unitName)} · ${esc(o.plan)}</span><span class="sub" style="display:block">${esc(fone(o.phone))}</span></div><div class="cv"><b>${brl(o.value)}</b><span class="sub ${cold.includes(o)?'stale':''}">gerado <span data-t="${o.createdAt}">${rel(o.createdAt)}</span></span></div><div class="ca"><a class="mini wa" href="${waLink(o)}" target="_blank" rel="noopener">WhatsApp</a><label class="chk"><input type="checkbox" data-c="${o.id}" ${o.contacted?'checked':''}> já contatei</label></div></article>`;
+  const sec=(t,l)=>l.length?`<h3 class="sech">${t}<span>${l.length}</span></h3><div class="cobs">${l.map(card).join('')}</div>`:'';
+  $('#cob').innerHTML=L.length?`<div class="sumline"><b>${L.length}</b> Pix pendentes · <b>${brl(open)}</b> em aberto</div>`+sec('Esfriando (mais de 30 min)',cold)+sec('Recentes',warm):'<div class="empty">Nenhum Pix pendente. Tudo em dia.</div>';
+}
+$('#cob').addEventListener('change',e=>{const c=e.target.closest('[data-c]');if(c)post('/api/admin/orders/'+c.dataset.c,{contacted:c.checked}).catch(er=>toast(esc(er.message)))});
+function renderUnitsView(){
+  const L=S.orders.filter(inPeriod),m=new Map(),pm=new Map();
+  L.forEach(o=>{const k=o.unitName||'—',u=m.get(k)||{g:0,p:0,x:0,r:0};u.g++;if(o.status==='paid'){u.p++;u.r+=o.value}else if(o.status==='pending')u.x++;m.set(k,u);
+    const q=o.plan||'—',w=pm.get(q)||{g:0,p:0,r:0};w.g++;if(o.status==='paid'){w.p++;w.r+=o.value}pm.set(q,w)});
+  const list=[...m].sort((a,b)=>b[1].r-a[1].r||b[1].g-a[1].g),mx=Math.max(1,...list.map(x=>x[1].g));
+  $('#unitsTbl').innerHTML=list.map(([n,u])=>`<tr><td><b>${esc(n)}</b><div class="track slim"><i style="width:${u.p/mx*100}%;background:var(--ok)"></i><i style="width:${(u.g-u.p)/mx*100}%;background:#3a3540"></i></div></td><td>${u.g}</td><td>${u.p}</td><td>${u.x}</td><td>${u.g?Math.round(u.p/u.g*100):0}%</td><td><b>${brl(u.r)}</b></td></tr>`).join('')||'<tr><td colspan="6" class="empty">Sem dados ainda.</td></tr>';
+  $('#plans').innerHTML=[...pm].sort((a,b)=>b[1].r-a[1].r).map(([n,w])=>`<div class="card"><h2>${esc(n)}</h2><b>${brl(w.r)}</b><span class="sub">${w.p} pagos de ${w.g} Pix gerados</span></div>`).join('')||'<span class="sub">Sem dados ainda.</span>';
+}
+
+function renderKpis(){
+  const L=S.orders.filter(inPeriod),paid=L.filter(o=>o.status==='paid'),pend=L.filter(o=>o.status==='pending');
+  const rev=paid.reduce((a,o)=>a+o.value,0),open=pend.reduce((a,o)=>a+o.value,0);
+  const today0=startOfDay(Date.now()),pt=S.orders.filter(o=>o.status==='paid'&&ts(o.paidAt)>=today0);
+  const durs=paid.filter(o=>o.paidAt).map(o=>ts(o.paidAt)-ts(o.createdAt));
+  const avg=durs.length?durs.reduce((a,b)=>a+b,0)/durs.length:0;
+  const conv=L.length?Math.round(paid.length/L.length*100):0;
+  const K=[['hero','Recebido',brl(rev),`${paid.length} pagamento${paid.length===1?'':'s'}`],
+    ['','Pendentes',pend.length,`${brl(open)} em aberto`],
+    ['','Conversão',conv+'%',`${paid.length} de ${L.length} Pix gerados`],
+    ['','Pagos hoje',brl(pt.reduce((a,o)=>a+o.value,0)),`${pt.length} hoje`],
+    ['','Tempo até pagar',avg?span(avg):'—','média dos pagos']];
+  $('#kpis').innerHTML=K.map(([c,t,v,s])=>`<div class="kpi ${c}"><small>${t}</small><b>${v}</b><span>${s}</span></div>`).join('');
+}
+function renderChart(){
+  const days=[];for(let i=6;i>=0;i--)days.push(startOfDay(Date.now()-i*864e5));
+  const gen=days.map(()=>0),pd=days.map(()=>0),idx=Object.fromEntries(days.map((d,i)=>[dayKey(d),i]));
+  S.orders.forEach(o=>{const i=idx[dayKey(ts(o.createdAt))];if(i!==undefined){gen[i]++;if(o.status==='paid')pd[i]++}});
+  const mx=Math.max(1,...gen),W=560,H=150,bw=30,gap=(W-days.length*bw*2)/(days.length+1);
+  let s=`<svg viewBox="0 -16 ${W} ${H+40}" width="100%" role="img" aria-label="Pix gerados e pagos por dia">`;
+  days.forEach((d,i)=>{const x=gap+i*(bw*2+gap),h1=gen[i]/mx*H,h2=pd[i]/mx*H;
+    s+=`<rect x="${x}" y="${H-h1}" width="${bw}" height="${h1}" rx="5" fill="#3a3540"/><rect x="${x+bw}" y="${H-h2}" width="${bw}" height="${h2}" rx="5" fill="#2fd27a"/>`;
+    if(gen[i])s+=`<text x="${x+bw}" y="${H-Math.max(h1,h2)-5}" fill="#9a9aa5" font-size="11" text-anchor="middle">${pd[i]}/${gen[i]}</text>`;
+    s+=`<text x="${x+bw}" y="${H+16}" fill="#9a9aa5" font-size="11" text-anchor="middle">${new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</text>`});
+  $('#chart').innerHTML=s+'</svg>';
+}
+function renderFilters(){
+  const sel=$('#f-unit'),units=[...new Set(S.orders.map(o=>o.unitName).filter(Boolean))].sort(),cur=S.f.unit;
+  sel.innerHTML='<option value="">Todas as unidades</option>'+units.map(u=>`<option ${u===cur?'selected':''}>${esc(u)}</option>`).join('');
+  const B=base(),c=k=>B.filter(o=>o.status===k).length;
+  $('#tabs').innerHTML=[['all','Todos',B.length],['pending','Pendentes',c('pending')],['paid','Pagos',c('paid')],['expired','Expirados',c('expired')]]
+    .map(([k,l,n])=>`<button class="tab ${S.f.status===k?'on':''}" data-s="${k}">${l}<span>${n}</span></button>`).join('');
+  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{S.f.status=b.dataset.s;S.limit=100;render()});
+}
+function waLink(o){
+  const msg=o.status==='paid'?`Oi ${first(o.name)}, tudo bem? Aqui é da Academia Gaviões ${o.unitName}. Recebemos seu pagamento, bem-vindo(a)! 💪`
+    :`Oi ${first(o.name)}, tudo bem? Aqui é da Academia Gaviões ${o.unitName}. Vi que você iniciou sua matrícula e o Pix ainda não foi concluído. Posso te ajudar?`;
+  const p=o.phone.length>=12?o.phone:'55'+o.phone;
+  return `https://wa.me/${p}?text=${encodeURIComponent(msg)}`;
+}
+function renderRows(){
+  if(document.activeElement&&document.activeElement.matches&&document.activeElement.matches('[data-note]'))return;
+  let L=base();if(S.f.status!=='all')L=L.filter(o=>o.status===S.f.status);
+  L.sort((a,b)=>ts(b.createdAt)-ts(a.createdAt));
+  $('#empty').classList.toggle('hide',L.length>0);
+  $('#more').classList.toggle('hide',L.length<=S.limit);
+  $('#rows').innerHTML=L.slice(0,S.limit).map(o=>{
+    const stale=o.status==='pending'&&Date.now()-ts(o.createdAt)>30*60000;
+    const row=`<tr class="row ${S.flash.has(o.id)?'flash':''}" data-id="${o.id}">
+      <td data-l="Status"><span class="badge ${o.status}">${LABEL[o.status]}</span></td>
+      <td class="c-name name" data-l="Aluno"><b>${esc(o.name||'—')}${o.contacted?'<span class="tag">✓ contatado</span>':''}</b><span class="sub">${esc(o.email)}</span></td>
+      <td data-l="CPF">${esc(cpfShow(o.cpf))}</td>
+      <td data-l="Telefone">${esc(fone(o.phone))}</td>
+      <td data-l="Unidade / Plano"><b>${esc(o.unitName||'—')}</b><span class="sub" style="display:block">${esc(o.plan)}</span></td>
+      <td data-l="Valor"><b>${brl(o.value)}</b></td>
+      <td data-l="Pix gerado">${hm(o.createdAt)}<span class="sub ${stale?'stale':''}" style="display:block">${dm(o.createdAt)} · <span data-t="${o.createdAt}" data-stale="${o.status==='pending'?1:0}">${rel(o.createdAt)}</span></span></td>
+      <td data-l="Pago em">${o.paidAt?`<b>${hm(o.paidAt)}</b><span class="sub" style="display:block">${dm(o.paidAt)} · em ${span(ts(o.paidAt)-ts(o.createdAt))}</span>`:'<span class="sub">—</span>'}</td>
+      <td class="c-act"><a class="mini wa" href="${waLink(o)}" target="_blank" rel="noopener" data-stop>WhatsApp</a></td></tr>`;
+    if(S.open!==o.id)return row;
+    return row+`<tr class="detail"><td colspan="9"><div class="dgrid">
+      <div><label>CPF completo</label><b>${esc(cpfFull(o.cpf))}</b> <button class="mini" data-copy="${esc(cpfFull(o.cpf))}">copiar</button></div>
+      <div><label>E-mail</label><b>${esc(o.email)}</b> <button class="mini" data-copy="${esc(o.email)}">copiar</button></div>
+      <div><label>Dispositivo</label><b>${esc(o.device)}</b></div>
+      <div><label>ID do Pix</label><b>${esc(o.chargeId)}</b></div>
+      <div><label><input type="checkbox" data-contacted ${o.contacted?'checked':''}> Já entrei em contato</label></div>
+      <div style="grid-column:1/-1"><label>Observação</label><textarea class="f-in" data-note placeholder="Ex.: pediu para ligar amanhã…">${esc(o.note)}</textarea></div>
+      ${o.status!=='paid'?'<div><button class="mini" data-del style="color:var(--bad)">Excluir registro</button></div>':''}
+    </div></td></tr>`;
+  }).join('');
+}
+$('#rows').addEventListener('click',async e=>{
+  const t=e.target;
+  if(t.closest('[data-stop]'))return;
+  const copy=t.closest('[data-copy]');
+  if(copy){try{await navigator.clipboard.writeText(copy.dataset.copy);toast('Copiado.')}catch{toast('Não foi possível copiar.')}return}
+  const det=t.closest('tr.detail');
+  const id=(det?det.previousElementSibling:t.closest('tr.row'))?.dataset.id;
+  if(!id)return;
+  if(det){
+    if(t.matches('[data-contacted]')){await post('/api/admin/orders/'+id,{contacted:t.checked}).catch(er=>toast(esc(er.message)))}
+    if(t.matches('[data-del]')&&confirm('Excluir este registro? Isso não pode ser desfeito.')){await post(`/api/admin/orders/${id}/delete`).catch(er=>toast(esc(er.message)));S.open=null}
+    return;
+  }
+  S.open=S.open===id?null:id;renderRows();
+});
+$('#rows').addEventListener('focusout',async e=>{
+  if(!e.target.matches('[data-note]'))return;
+  const id=e.target.closest('tr.detail').previousElementSibling.dataset.id,o=S.orders.find(x=>x.id===id);
+  if(o&&o.note!==e.target.value.trim())await post('/api/admin/orders/'+id,{note:e.target.value}).catch(er=>toast(esc(er.message)));
+});
+// atualiza os "há X min" sem redesenhar a tabela
+setInterval(()=>document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=rel(el.dataset.t)}),15000);
+
+/* ---------- início ---------- */
+(async()=>{try{await start()}catch{showLogin()}})();
+})();
+</script>
+</body>
+</html>

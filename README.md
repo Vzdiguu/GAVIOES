@@ -54,3 +54,8 @@ PORT=3000
 - `POST /api/capture-agenda`: captura local usada pelas ferramentas de agenda.
 
 As grades de aulas armazenadas localmente são snapshots da programação oficial e podem ser atualizadas quando a unidade alterar seus horários.
+
+## Painel administrativo PWA
+O frontend do painel fica em `painel/` e pode ser servido em `/painel/`. Ele inclui manifesto, service worker, ícones e cadastro/cancelamento de inscrição Web Push. O contrato das rotas esperadas pelo frontend está em `painel/BACKEND-PUSH-CONTRACT.md`.
+
+**Ainda não está pronto para produção com push:** este repositório atualmente não implementa autenticação do painel, persistência das inscrições ou envio Web Push; isso precisa ser implementado no backend antes de ativar a funcionalidade. A produção também exige HTTPS e armazenamento durável das inscrições.
