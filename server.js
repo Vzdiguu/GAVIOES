@@ -135,6 +135,11 @@ async function handlePayment(req, res, pathname) {
     });
   }
 
+  // A PushinPay envia eventos por POST, mas o painel pode validar a URL por GET.
+  if (req.method === 'GET' && pathname === '/api/payments/pix/webhook') {
+    return json(res, 200, { ok: true, endpoint: 'pushinpay-webhook' });
+  }
+
   if (req.method === 'GET' && pathname.startsWith('/api/payments/pix/')) {
     const id = pathname.split('/').pop();
     if (!/^[a-f0-9-]{20,}$/i.test(id)) {
@@ -142,11 +147,6 @@ async function handlePayment(req, res, pathname) {
     }
     const transaction = await pushinpay(`/api/transactions/${encodeURIComponent(id)}`);
     return json(res, 200, { id: transaction.id, status: transaction.status });
-  }
-
-  // A PushinPay envia eventos por POST, mas o painel pode validar a URL por GET.
-  if (req.method === 'GET' && pathname === '/api/payments/pix/webhook') {
-    return json(res, 200, { ok: true, endpoint: 'pushinpay-webhook' });
   }
 
   if (req.method === 'POST' && pathname === '/api/payments/pix/webhook') {
