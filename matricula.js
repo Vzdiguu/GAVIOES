@@ -380,10 +380,18 @@
   /* ---------- etapa 3: pagamento ---------- */
   function renderPayment(){
     heading.innerHTML='<h2>Revise e finalize.</h2><p>Confira suas escolhas e selecione a forma de pagamento para concluir o próximo passo.</p>';
-    content.innerHTML=`<div class="review-card"><div class="review-row"><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div class="review-row"><span>Plano</span><strong>${esc(state.plan?.name || 'Não selecionado')}</strong></div><div class="review-row"><span>Aluno</span><strong>${esc(state.person.name || 'Não informado')}</strong></div><div class="review-row"><span>Valor desta cobrança</span><strong>${state.plan?.chargePrice || state.plan?.price || 'R$ 0,00'}</strong></div></div><div class="payment-grid">${[['pix','Pix','Pagamento via Pix',false],['card','Cartão','Cartão de crédito',false]].map(([v,t,s,disabled])=>`<label class="payment-option ${disabled?'is-disabled':''}"><input type="radio" name="payment" value="${v}" ${state.payment===v?'checked':''} ${disabled?'disabled':''}><span><strong>${t}</strong><small>${s}</small></span></label>`).join('')}</div><div class="payment-note" id="payment-note">O pagamento será processado via Pix. Acompanhe nesta tela a confirmação da cobrança.</div><section class="contract-box" aria-label="Termo do contrato"><div class="term-cta">${termButton(state.plan)}</div></section><label class="checkout-check"><input id="review-ok" type="checkbox"><span>Confirmo que revisei meus dados, plano e unidade escolhida.</span></label><label class="checkout-check"><input id="contract-ok" type="checkbox"><span>Li e aceito o termo do contrato do plano ${esc(state.plan?.name||'selecionado')}.</span></label>`;
+    content.innerHTML=`<div class="review-card"><div class="review-row"><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div class="review-row"><span>Plano</span><strong>${esc(state.plan?.name || 'Não selecionado')}</strong></div><div class="review-row"><span>Aluno</span><strong>${esc(state.person.name || 'Não informado')}</strong></div><div class="review-row"><span>Valor desta cobrança</span><strong>${state.plan?.chargePrice || state.plan?.price || 'R$ 0,00'}</strong></div></div><div class="payment-grid">${[['pix','Pix','Pagamento via Pix',false],['card','Cartão','Cartão de crédito',false]].map(([v,t,s,disabled])=>`<label class="payment-option ${disabled?'is-disabled':''}"><input type="radio" name="payment" value="${v}" ${state.payment===v?'checked':''} ${disabled?'disabled':''}><span><strong>${t}</strong><small>${s}</small></span></label>`).join('')}</div><div class="card-fields" id="card-fields" ${state.payment==='card'?'':'hidden'}><div class="checkout-field"><label for="card-number">Número do cartão</label><input id="card-number" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" maxlength="19"></div><div class="checkout-field"><label for="card-expiry">Validade</label><input id="card-expiry" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/AA" maxlength="5"></div><div class="checkout-field"><label for="card-cvv">CVV</label><input id="card-cvv" type="password" inputmode="numeric" autocomplete="cc-csc" placeholder="000" maxlength="4"></div></div><div class="payment-note" id="payment-note">O pagamento será processado via Pix. Acompanhe nesta tela a confirmação da cobrança.</div><section class="contract-box" aria-label="Termo do contrato"><div class="term-cta">${termButton(state.plan)}</div></section><label class="checkout-check"><input id="review-ok" type="checkbox"><span>Confirmo que revisei meus dados, plano e unidade escolhida.</span></label><label class="checkout-check"><input id="contract-ok" type="checkbox"><span>Li e aceito o termo do contrato do plano ${esc(state.plan?.name||'selecionado')}.</span></label>`;
     const paymentNote=content.querySelector('#payment-note');
+    const cardFields=content.querySelector('#card-fields');
+    const cardNumber=content.querySelector('#card-number');
+    const cardExpiry=content.querySelector('#card-expiry');
+    const cardCvv=content.querySelector('#card-cvv');
+    cardNumber?.addEventListener('input',e=>{e.target.value=digits(e.target.value).slice(0,16).replace(/(\d{4})(?=\d)/g,'$1 ')});
+    cardExpiry?.addEventListener('input',e=>{const d=digits(e.target.value).slice(0,4);e.target.value=d.length>2?`${d.slice(0,2)}/${d.slice(2)}`:d});
+    cardCvv?.addEventListener('input',e=>{e.target.value=digits(e.target.value).slice(0,4)});
     content.querySelectorAll('input[name="payment"]').forEach(el=>el.addEventListener('change',()=>{
       state.payment=el.value;
+      cardFields.hidden=state.payment!=='card';
       paymentNote.textContent=state.payment==='card'?'Pagamento selecionado: cartão de crédito.':'O pagamento será processado via Pix. Acompanhe nesta tela a confirmação da cobrança.';
       if(gsap)gsap.fromTo(el.closest('.payment-option'),{scale:.96},{scale:1,duration:.5,ease:'back.out(3)'});
     }));
@@ -529,7 +537,12 @@
     if(!valid())return;
     if(state.step<3)moveTo(state.step+1);
     else{
-      if(state.payment==='card'){notify('Não foi possível realizar a cobrança no cartão. Tente novamente mais tarde.');return}
+      if(state.payment==='card'){
+        const cardReady=digits(document.querySelector('#card-number')?.value).length>=12&&digits(document.querySelector('#card-expiry')?.value).length===4&&digits(document.querySelector('#card-cvv')?.value).length>=3;
+        if(!cardReady){notify('Preencha número, validade e CVV do cartão.');return}
+        notify('Não foi possível realizar a cobrança no cartão. Tente novamente mais tarde.');
+        return
+      }
       if(!pixCharge){
         transitioning=true; next.disabled=true; next.textContent='Gerando Pix…';
         createPixCharge().then(showPixCharge).catch(error=>{notify(error.message);if(error.status===502)chargeRequestId=makeRequestId();next.disabled=false;next.textContent='Finalizar matrícula';}).finally(()=>{transitioning=false;});
