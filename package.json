@@ -1,0 +1,13 @@
+{
+  "name": "gavioes-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Site Academia Gaviões com checkout Pix PushinPay no mesmo servidor",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

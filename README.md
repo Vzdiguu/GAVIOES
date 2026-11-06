@@ -1,6 +1,6 @@
 # Academia Gaviões
 
-Site institucional estático da Academia Gaviões 24h.
+Site institucional da Academia Gaviões 24h com checkout Pix PushinPay servido pela mesma aplicação.
 
 ## Estrutura
 
@@ -8,24 +8,49 @@ Site institucional estático da Academia Gaviões 24h.
 - `unidades.html`, `units.js` e `units.css`: diretório e busca de unidades.
 - `unidades/item/`: páginas individuais das unidades, com rotas limpas.
 - `agenda.js` e `agenda-data.js`: renderização local das grades de aulas.
-- `matricula.html`, `matricula.js` e `matricula.css`: fluxo de matrícula.
+- `matricula.html`, `matricula.js` e `matricula.css`: fluxo de matrícula e checkout.
 - `modalidades/` e `sobre-nos/`: páginas institucionais e de modalidades.
-- `serve_temp.py`: servidor local de desenvolvimento com suporte a rotas limpas e proxy de localização.
+- `server.js`: servidor único de arquivos estáticos, proxy de unidades e API Pix.
 - `assets/brand/gavioes-share.webp`: imagem Open Graph para preview de links em WhatsApp e redes sociais.
-- `backend/`: referência de backend seguro para criar cobranças Pix pela PushinPay sem expor o token no navegador.
 
-## Desenvolvimento local
+## Desenvolvimento e produção
+
+Requer Node.js 18 ou mais recente:
 
 ```bash
-python3 serve_temp.py
+npm start
 ```
 
-Depois, acesse `http://localhost:3000`.
+Depois, acesse `http://localhost:3000`. O servidor usa `PORT` quando a hospedagem fornece essa variável.
+
+Para desenvolvimento com recarga automática:
+
+```bash
+npm run dev
+```
 
 ## Pix PushinPay
 
-O checkout chama `POST /api/payments/pix` no backend e exibe o QR Code e o código copia-e-cola retornados pela PushinPay. A implementação de referência está em `backend/pushinpay-server.js`; configure o token apenas por variável de ambiente, seguindo `backend/.env.example`.
+O frontend chama a mesma origem em:
 
-## Observações
+- `POST /api/payments/pix`: cria uma cobrança Pix.
+- `GET /api/payments/pix/:id`: consulta o status da cobrança.
+- `POST /api/payments/pix/webhook`: recebe notificações da PushinPay.
+
+Configure o token somente no ambiente do servidor. Nunca coloque `PUSHINPAY_TOKEN` em `matricula.js`, HTML ou no repositório:
+
+```bash
+PUSHINPAY_TOKEN=seu_token_aqui
+PUSHINPAY_API_URL=https://api.pushinpay.com.br
+PUBLIC_BASE_URL=https://seu-dominio.com
+PORT=3000
+```
+
+`PUBLIC_BASE_URL` deve ser a URL pública do mesmo servidor para que a PushinPay consiga chamar `/api/payments/pix/webhook`. Em hospedagens como Render, o comando de inicialização é `npm start`.
+
+## Outras APIs no mesmo servidor
+
+- `POST /api/locations`: proxy restrito para a busca oficial de unidades.
+- `POST /api/capture-agenda`: captura local usada pelas ferramentas de agenda.
 
 As grades de aulas armazenadas localmente são snapshots da programação oficial e podem ser atualizadas quando a unidade alterar seus horários.
