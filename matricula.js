@@ -6,6 +6,7 @@
     {id:'black',name:'Gaviões Black',tag:'Experiência completa',note:'Para quem quer fazer da Gaviões parte da rotina.',desc:'A experiência completa para quem não para.',price:'R$ 149,90',value:149.9,period:'/mês',contract:['Acesso à unidade escolhida e à experiência completa prevista na oferta Black vigente.','Mensalidade recorrente de R$ 149,90, cobrada mensalmente no meio de pagamento escolhido.','Os benefícios adicionais são aqueles apresentados no momento da contratação e podem seguir regras específicas da unidade.','Cancelamentos, pausas e alterações dependem de solicitação à unidade e das condições comerciais informadas no atendimento.']}
   ];
   const params = new URLSearchParams(location.search);
+  const demoMode = params.get('demo');
   const slugTitle = slug => String(slug || '').replace(/^(sp|ce|df|ba|go|pe|pr|se|to|pa)/i,'').replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()).trim() || 'Sua unidade';
   const queryUnit = params.get('unidade');
   const saved = (() => { try { return JSON.parse(sessionStorage.getItem('gavioesCheckoutState') || 'null') || {}; } catch (_) { return {}; } })();
@@ -255,7 +256,8 @@
   };
   const showPixCharge = charge => {
     pixCharge=charge; next.style.display='none';
-    const image = charge.qr_code_base64 ? `<img class="pix-qr-code" src="${String(charge.qr_code_base64).startsWith('data:')?charge.qr_code_base64:`data:image/png;base64,${charge.qr_code_base64}`}" alt="QR Code Pix">` : '';
+    const imageSrc = charge.qr_image_url || (charge.qr_code_base64 ? `${String(charge.qr_code_base64).startsWith('data:')?charge.qr_code_base64:`data:image/png;base64,${charge.qr_code_base64}`}` : '');
+    const image = imageSrc ? `<img class="pix-qr-code" src="${esc(imageSrc)}" alt="QR Code Pix">` : '';
     content.innerHTML=`<section class="pix-checkout"><div class="pix-checkout-head"><div><span class="option-kicker">PAGAMENTO PIX</span><h2>Pague pelo Pix.</h2><p>Escaneie o QR Code no app do seu banco ou copie o código para pagar a matrícula.</p></div><div class="pix-amount"><small>Total</small><strong>${state.plan.price}</strong></div></div><div class="pix-payment-box"><div class="pix-qr-side">${image}<small>Abra o app do seu banco<br>e aponte a câmera</small></div><div class="pix-code-side"><label class="pix-copy-label" for="pix-copy">Pix copia e cola</label><textarea id="pix-copy" readonly>${esc(charge.qr_code||'')}</textarea><button type="button" class="checkout-button checkout-button-primary" id="pix-copy-button">Copiar código</button></div></div><div class="pix-waiting" id="pix-status"><i></i><span>Aguardando confirmação do pagamento</span></div><button type="button" class="checkout-button checkout-button-light pix-check-button" id="pix-check-button">Já paguei, verificar</button></section>`;
     document.querySelector('#pix-copy-button')?.addEventListener('click',async()=>{await navigator.clipboard?.writeText(charge.qr_code||'');notify('Código Pix copiado.');});
     document.querySelector('#pix-check-button')?.addEventListener('click',async()=>{
@@ -265,6 +267,7 @@
     });
   };
   const createPixCharge = async () => {
+    if(demoMode==='pix') return {id:'demo-pix-1234567890',status:'created',qr_code:'00020126580014BR.GOV.BCB.PIX0136demo-nao-pagar520400005303986540589.905802BR5917ACADEMIA GAVIOES6009SAO PAULO6304DEMO',qr_image_url:'/assets/brand/pix-preview-qr.png'};
     const response=await fetch('/api/payments/pix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:state.plan.value,description:`Matrícula ${state.plan.name} - ${state.unit.name}`,unit:state.unit.id,customer:state.person})});
     const result=await response.json(); if(!response.ok)throw new Error(result.error||'Não foi possível gerar o Pix.'); return result;
   };
@@ -342,6 +345,12 @@
   document.querySelectorAll('.checkout-step').forEach(el=>el.addEventListener('click',()=>{const t=Number(el.dataset.step);if(t<state.step)moveTo(t)}));
 
   render();
+  if(demoMode==='pix' && state.unit){
+    state.plan=plans[1]; state.person={name:'João da Silva',email:'joao@example.com',phone:'(11) 99999-9999',cpf:'529.982.247-25'}; state.step=3; render();
+    setTimeout(()=>showPixCharge({id:'demo-pix-1234567890',status:'created',qr_code:'00020126580014BR.GOV.BCB.PIX0136demo-nao-pagar520400005303986540589.905802BR5917ACADEMIA GAVIOES6009SAO PAULO6304DEMO',qr_image_url:'/assets/brand/pix-preview-qr.png'}),80);
+  } else if(demoMode==='confirmed' && state.unit){
+    state.plan=plans[1]; state.person={name:'João da Silva',email:'joao@example.com',phone:'(11) 99999-9999',cpf:'529.982.247-25'}; state.step=3; state.confirmed=true; render();
+  }
   if(gsap){
     gsap.set('.checkout-hero h1',{clipPath:'inset(0 0 100% 0)'});
     animateEntry();
