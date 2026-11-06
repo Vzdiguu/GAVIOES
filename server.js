@@ -144,6 +144,11 @@ async function handlePayment(req, res, pathname) {
     return json(res, 200, { id: transaction.id, status: transaction.status });
   }
 
+  // A PushinPay envia eventos por POST, mas o painel pode validar a URL por GET.
+  if (req.method === 'GET' && pathname === '/api/payments/pix/webhook') {
+    return json(res, 200, { ok: true, endpoint: 'pushinpay-webhook' });
+  }
+
   if (req.method === 'POST' && pathname === '/api/payments/pix/webhook') {
     const body = await readJson(req);
     console.log('[PushinPay webhook]', JSON.stringify({ id: body.id, status: body.status }));
