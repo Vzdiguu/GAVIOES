@@ -274,10 +274,6 @@ const server = http.createServer(async (req, res) => {
       return json(res, 404, { error: 'Endpoint não encontrado.' });
     }
     if (req.method !== 'GET' && req.method !== 'HEAD') return json(res, 405, { error: 'Método não permitido.' });
-    if (pathname === '/admin' || pathname === '/admin/' || pathname === '/painel') {
-      res.writeHead(302, { location: '/painel/', 'cache-control': 'no-store' });
-      return res.end();
-    }
     return serveStatic(req, res, pathname);
   } catch (error) {
     console.error(error);
