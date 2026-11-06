@@ -21,7 +21,7 @@
     const mobile = window.matchMedia && window.matchMedia('(max-width: 680px)').matches;
     const pageStyles = () => document.querySelectorAll('link[data-spa-page-style="overlay"]');
     const routeOf = (url) => `${url.pathname}${url.search}${url.hash}`;
-    const isFlowPage = (url) => /\/unidades(?:$|\.html$|\/item\/)|\/matricula(?:\.html)?$/.test(url.pathname);
+    const isFlowPage = (url) => /\/unidades(?:$|\.html$|\/item\/)/.test(url.pathname);
 
     const removePageStyles = () => pageStyles().forEach((node) => node.remove());
     const closeOverlay = (animate = true) => {
@@ -114,7 +114,7 @@
       } catch (error) {
         console.error('Gavioes SPA navigation failed', error);
         if (transition) gsap.set(transition, {scaleX:0});
-        if (!q('#gavioes-spa-layer')) location.href = url.href;
+        if (id === requestId) window.location.href = url.href;
       }
     };
 
