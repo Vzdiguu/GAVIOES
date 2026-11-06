@@ -7,9 +7,17 @@
   const q = (selector, root = document) => root.querySelector(selector);
   const qa = (selector, root = document) => [...root.querySelectorAll(selector)];
   const ease = 'power3.out';
+  // Respeita prefers-reduced-motion: duração zero nas transições de navegação.
+  const dur = (v) => (reduce ? 0 : v);
 
   function createImmersionChrome() {
     let requestId = 0;
+    let lastFocus = null;
+    const keepIds = ['gavioes-spa-layer', 'gavioes-page-transition', 'gavioes-scroll-progress', 'gavioes-cursor-aura'];
+    const setBackgroundInert = (on) => [...document.body.children].forEach((node) => {
+      if (keepIds.includes(node.id) || node.tagName === 'SCRIPT') return;
+      if (on) node.setAttribute('inert', ''); else node.removeAttribute('inert');
+    });
     const mobile = window.matchMedia && window.matchMedia('(max-width: 680px)').matches;
     const pageStyles = () => document.querySelectorAll('link[data-spa-page-style="overlay"]');
     const routeOf = (url) => `${url.pathname}${url.search}${url.hash}`;
@@ -19,8 +27,8 @@
     const closeOverlay = (animate = true) => {
       const layer = q('#gavioes-spa-layer');
       if (!layer) return;
-      const finish = () => { if (window.ScrollTrigger) window.ScrollTrigger.getAll().forEach((t) => { if (t.vars && t.vars.scroller === layer) t.kill(); }); const bar = q('#gavioes-scroll-progress'); if (bar) gsap.set(bar, {scaleX: window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)}); layer.remove(); removePageStyles(); document.body.classList.remove('spa-open'); document.title = 'Mais tempo para você | Academia Gaviões'; };
-      if (animate && gsap) gsap.to(layer, {x:window.innerWidth, duration:mobile?.18:.26, ease:'power3.in', onComplete:finish});
+      const finish = () => { if (window.ScrollTrigger) window.ScrollTrigger.getAll().forEach((t) => { if (t.vars && t.vars.scroller === layer) t.kill(); }); const bar = q('#gavioes-scroll-progress'); if (bar) gsap.set(bar, {scaleX: window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)}); layer.remove(); removePageStyles(); document.body.classList.remove('spa-open'); setBackgroundInert(false); if (lastFocus && lastFocus.focus) lastFocus.focus({preventScroll:true}); lastFocus = null; document.title = 'Mais tempo para você | Academia Gaviões'; };
+      if (animate && gsap) gsap.to(layer, {x:window.innerWidth, duration:dur(mobile?.18:.26), ease:'power3.in', onComplete:finish});
       else finish();
     };
 
@@ -52,6 +60,11 @@
           layer = document.createElement('div');
           layer.id = 'gavioes-spa-layer';
           layer.setAttribute('aria-label', 'Navegação Gaviões');
+          layer.setAttribute('role', 'dialog');
+          layer.setAttribute('aria-modal', 'true');
+          layer.tabIndex = -1;
+          lastFocus = document.activeElement;
+          setBackgroundInert(true);
           document.body.appendChild(layer);
           document.body.classList.add('spa-open');
           layer.addEventListener('scroll', () => { const bar = q('#gavioes-scroll-progress'); if (bar) gsap.set(bar, {scaleX: layer.scrollTop / Math.max(1, layer.scrollHeight - layer.clientHeight)}); }, {passive:true});
@@ -94,9 +107,10 @@
         if (isCheckout) await executePageScript(layer, next);
         else executePageScript(layer, next);
         layer.style.visibility = '';
+        layer.focus({preventScroll:true});
         if (firstOpen) gsap.set(layer, {x:window.innerWidth});
-        gsap.to(layer, {x:0, duration:mobile?.22:.36, ease:'power3.out'});
-        if (transition) gsap.to(transition, {scaleX:0, duration:mobile?.16:.24, delay:mobile?0:.1, ease:'power4.inOut'});
+        gsap.to(layer, {x:0, duration:dur(mobile?.22:.36), ease:'power3.out'});
+        if (transition) gsap.to(transition, {scaleX:0, duration:dur(mobile?.16:.24), delay:mobile?0:.1, ease:'power4.inOut'});
       } catch (error) {
         console.error('Gavioes SPA navigation failed', error);
         if (transition) gsap.set(transition, {scaleX:0});
@@ -108,6 +122,11 @@
       if (history.state?.gavioesOverlay) history.back();
       else closeOverlay(true);
     };
+    document.addEventListener('keydown', (event) => {
+      const layer = q('#gavioes-spa-layer');
+      // Na matrícula o Esc já fecha o contrato e sair do checkout por engano perderia o preenchimento.
+      if (event.key === 'Escape' && !event.defaultPrevented && layer && !layer.classList.contains('matricula-page')) window.gavioesCloseUnits();
+    });
     window.addEventListener('popstate', () => {
       if (history.state?.gavioesOverlay && isFlowPage(new URL(location.href))) loadPage(new URL(location.href), false, false);
       else closeOverlay(true);
@@ -118,7 +137,7 @@
       transition.id = 'gavioes-page-transition';
       transition.setAttribute('aria-hidden', 'true');
       document.body.appendChild(transition);
-      gsap.to(transition, {scaleX:0, duration:mobile?.16:.24, delay:mobile?0:.02, ease:'power4.inOut'});
+      gsap.to(transition, {scaleX:0, duration:dur(mobile?.16:.24), delay:mobile?0:.02, ease:'power4.inOut'});
       document.addEventListener('click', (event) => {
         const link = event.target.closest && event.target.closest('a[href]');
         if (!link || link.target === '_blank' || link.hasAttribute('data-clone-external')) return;
@@ -148,7 +167,7 @@
       document.body.appendChild(progress);
       if (window.ScrollTrigger) gsap.to(progress, {scaleX:1, ease:'none', scrollTrigger:{start:'top top', end:'max', scrub:.15}});
     }
-    if (!q('#gavioes-cursor-aura') && !window.matchMedia('(pointer: coarse)').matches) {
+    if (!reduce && !q('#gavioes-cursor-aura') && !window.matchMedia('(pointer: coarse)').matches) {
       const aura = document.createElement('div');
       aura.id = 'gavioes-cursor-aura'; aura.setAttribute('aria-hidden', 'true'); document.body.appendChild(aura);
       const moveX = gsap.quickTo(aura, 'x', {duration:.22, ease:'power3'});
@@ -160,6 +179,7 @@
   }
 
   function magnetic(elements) {
+    if (reduce) return;
     elements.forEach((el) => {
       el.addEventListener('pointermove', (event) => {
         const box = el.getBoundingClientRect();
@@ -172,6 +192,7 @@
   }
 
   function tilt(elements) {
+    if (reduce) return;
     elements.forEach((el) => {
       el.addEventListener('pointermove', (event) => {
         const box = el.getBoundingClientRect();
@@ -185,7 +206,7 @@
 
   function initHome() {
     const hero = q('.gavioes-conversion-hero');
-    if (!hero) return;
+    if (!hero || reduce) return;
     const header = q('header');
     const kicker = q('.gavioes-conversion-kicker', hero);
     const title = q('.gavioes-conversion-copy h1', hero);
@@ -205,7 +226,6 @@
     if (window.ScrollTrigger) {
       gsap.to(image, { scale: 1.14, yPercent: 9, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
       gsap.to('.gavioes-conversion-copy', { y: 70, opacity: .18, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
-      gsap.to('.gavioes-conversion-hero:after', { rotation: -4, xPercent: 8, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
       qa('#tm-main > *:not(.gavioes-conversion-hero)').forEach((section, index) => gsap.from(section, { y: 48, opacity: 0, duration: .8, ease, scrollTrigger: { trigger: section, start: 'top 86%', once: true }, delay: Math.min(index * .02, .15) }));
     }
     magnetic(qa('.gavioes-conversion-actions a, .gavioes-global-cta a, .gavioes-context-band a'));
@@ -220,7 +240,7 @@
 
   function initFlow() {
     const shell = q('.flow-shell');
-    if (!shell) return;
+    if (!shell || reduce) return;
     const intro = q('.flow-intro');
     const card = q('.flow-card');
     gsap.from(intro, { y: 34, opacity: 0, duration: .9, ease });
@@ -242,7 +262,7 @@
   function initInstitutional() {
     if (q('.gavioes-conversion-hero') || q('.flow-shell') || q('[data-new-home]') || q('.units-shell') || q('.detail-shell')) return;
     const pageMain = q('#tm-main') || q('main');
-    if (!pageMain || !window.ScrollTrigger) return;
+    if (!pageMain || !window.ScrollTrigger || reduce) return;
     qa('h1, h2, h3, .uk-card, .uk-panel, .gavioes-context-band', pageMain).forEach((el, index) => gsap.from(el, { y: 30, opacity: 0, duration: .7, delay: Math.min(index * .02, .2), ease, scrollTrigger: { trigger: el, start: 'top 90%', once: true } }));
     tilt(qa('.uk-card, .uk-panel', pageMain));
   }

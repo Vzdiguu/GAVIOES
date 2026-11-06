@@ -46,7 +46,7 @@
   const scrollToY = (y) => {
     if (!gsap || reduce) { window.scrollTo(0, y); return; }
     const state = {value: window.scrollY};
-    gsap.to(state, {duration: Math.min(1.3, .6 + Math.abs(y - window.scrollY) / 4000), value: y, ease: 'power3.inOut', onUpdate: () => window.scrollTo(0, state.value)});
+    gsap.to(state, {duration: Math.min(1.3, .6 + Math.abs(y - window.scrollY) / 4000), value: y, ease: 'power3.inOut', onUpdate: () => window.scrollTo({top: state.value, left: 0, behavior: 'instant'})});
   };
   $$('a[href^="#"]').forEach((link) => link.addEventListener('click', (event) => {
     const id = link.getAttribute('href');

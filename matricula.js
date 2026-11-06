@@ -21,6 +21,10 @@
   const toast = document.querySelector('#toast');
   let transitioning = false;
   let pixCharge = null;
+  let pixTimer = null;
+  let justPaid = false;
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stopPix = () => { clearInterval(pixTimer); pixTimer = null; };
   document.addEventListener('click',e=>{const btn=e.target.closest('[data-term-plan]');if(btn){e.preventDefault();e.stopImmediatePropagation();openContract(btn.dataset.termPlan);return}if(e.target.closest('[data-contract-close]'))closeContract();},true);
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeContract();});
 
@@ -104,7 +108,7 @@
       <span class="plan-price-label">Mensalidade recorrente</span>
       <span class="plan-price"><strong>${p.price}</strong><small>${p.period}</small></span>
       <span class="plan-note">${p.note}</span>
-      ${termButton(p)}<span class="plan-select-label">${on?'Plano selecionado ✓':'Escolher este plano'}</span>
+      <span class="plan-select-label">${on?'Plano selecionado ✓':'Escolher este plano'}</span>
     </div>`;
   };
   function renderPlan(){
@@ -115,10 +119,8 @@
         <div class="plan-stage" role="group" aria-roledescription="carrossel" aria-label="Planos Gaviões">${plans.map(planCard).join('')}</div>
         <button class="carousel-arrow carousel-next" type="button" aria-label="Próximo plano">&#8594;</button>
       </div>
-      <div class="carousel-dots">${plans.map(p=>`<button class="carousel-dot" type="button" aria-label="Ver ${p.name}"></button>`).join('')}</div>
-      <section class="plan-contract" id="plan-contract" aria-label="Termo do plano"></section>`;
+      <div class="carousel-dots">${plans.map(p=>`<button class="carousel-dot" type="button" aria-label="Ver ${p.name}"></button>`).join('')}</div>`;
     initPlanCarousel();
-    renderContractPanel();
   }
   function initPlanCarousel(){
     const opt = {signal:planCtl.signal};
@@ -159,7 +161,7 @@
       cards.forEach((c,i)=>{const on=state.plan?.id===plans[i].id;c.classList.toggle('is-selected',on);c.setAttribute('aria-pressed',on);c.querySelector('.plan-select-label').textContent=on?'Plano selecionado ✓':'Escolher este plano'});
     }
     function select(i){
-      state.plan=plans[i]; paintSelection(); renderSummary(); renderContractPanel();
+      state.plan=plans[i]; paintSelection(); renderSummary();
       gsap.fromTo(cards[i],{scale:.94},{scale:1,duration:.7,ease:'elastic.out(1.1,.45)'});
       notify(`${state.plan.name} selecionado`);
     }
@@ -249,54 +251,110 @@
   }
 
   const finishEnrollment = () => {
-    state.confirmed=true; render(); transitioning=false; window.scrollTo({top:0,behavior:'smooth'});
+    stopPix(); const viaPix = state.payment==='pix' && !!pixCharge; justPaid = viaPix;
+    state.confirmed=true; render(); transitioning=false;
+    { const card=document.querySelector('.checkout-card'); const y=card?card.getBoundingClientRect().top+window.scrollY-84:0; window.scrollTo({top:Math.max(0,y),behavior:reduceMotion?'auto':'smooth'}); }
     if(gsap)gsap.fromTo(content,{opacity:0},{opacity:1,duration:.4});
-    notify('Pagamento confirmado. Matrícula preparada.');
+    if(!viaPix)notify('Matrícula preparada.');
   };
   const showPixCharge = charge => {
-    pixCharge=charge; next.style.display='none';
+    pixCharge=charge; next.style.display='none'; stopPix();
     const image = charge.qr_code_base64 ? `<img class="pix-qr-code" src="${String(charge.qr_code_base64).startsWith('data:')?charge.qr_code_base64:`data:image/png;base64,${charge.qr_code_base64}`}" alt="QR Code Pix">` : '';
-    content.innerHTML=`<section class="pix-checkout"><span class="option-kicker">PAGAMENTO PIX</span><h2>Escaneie para pagar.</h2><p>Abra o aplicativo do seu banco, escaneie o QR Code ou copie o código Pix abaixo.</p>${image}<label class="pix-copy-label" for="pix-copy">Pix copia e cola</label><textarea id="pix-copy" readonly>${esc(charge.qr_code||'')}</textarea><div class="pix-actions"><button type="button" class="checkout-button checkout-button-primary" id="pix-copy-button">Copiar código</button><button type="button" class="checkout-button checkout-button-light" id="pix-check-button">Já paguei, verificar</button></div><p class="pix-status" id="pix-status">Aguardando pagamento.</p></section>`;
-    document.querySelector('#pix-copy-button')?.addEventListener('click',async()=>{await navigator.clipboard?.writeText(charge.qr_code||'');notify('Código Pix copiado.');});
-    document.querySelector('#pix-check-button')?.addEventListener('click',async()=>{
-      const status=document.querySelector('#pix-status'); status.textContent='Verificando pagamento…';
-      try { const response=await fetch(`/api/payments/pix/${encodeURIComponent(charge.id)}`); const result=await response.json(); if(!response.ok)throw new Error(result.error||'Não foi possível consultar o Pix.'); if(result.status==='paid') finishEnrollment(); else status.textContent='Ainda não identificado. Tente novamente em alguns instantes.'; }
-      catch(error){status.textContent=error.message;}
+    content.innerHTML=`<section class="pix-checkout"><span class="option-kicker">PAGAMENTO PIX</span><h2>Escaneie para pagar.</h2><p>Abra o aplicativo do seu banco, escaneie o QR Code ou copie o código abaixo. Assim que o pagamento cair, esta tela confirma sozinha.</p><div class="pix-qr-wrap" id="pix-qr-wrap">${image}</div><label class="pix-copy-label" for="pix-copy">Pix copia e cola</label><textarea id="pix-copy" readonly>${esc(charge.qr_code||'')}</textarea><div class="pix-actions"><button type="button" class="checkout-button checkout-button-primary" id="pix-copy-button">Copiar código</button><button type="button" class="checkout-button checkout-button-light" id="pix-check-button">Já paguei, verificar</button></div><p class="pix-status is-waiting" id="pix-status" role="status" aria-live="polite"><i class="pix-dot"></i><span>Aguardando pagamento…</span></p></section>`;
+    const status=document.querySelector('#pix-status'), statusText=status.querySelector('span');
+    const setStatus=(text,cls)=>{statusText.textContent=text;status.className='pix-status '+(cls||'is-waiting')};
+    let busy=false, paid=false;
+    const onPaid=()=>{
+      if(paid)return; paid=true; stopPix();
+      setStatus('Pagamento confirmado!','is-paid');
+      if(navigator.vibrate)try{navigator.vibrate([60,40,120])}catch(_){}
+      setTimeout(finishEnrollment, reduceMotion?100:500);
+    };
+    const check=async(manual)=>{
+      if(busy||paid)return; busy=true; if(manual)setStatus('Verificando pagamento…','is-waiting');
+      try{
+        const response=await fetch(`/api/payments/pix/${encodeURIComponent(charge.id)}`,{cache:'no-store'});
+        const result=await response.json();
+        if(!response.ok)throw new Error(result.error||'Não foi possível consultar o Pix.');
+        const st=String(result.status||'').toLowerCase();
+        if(st==='paid')onPaid();
+        else if(st==='canceled'||st==='cancelled'||st==='expired'){
+          stopPix(); setStatus('Este Pix expirou ou foi cancelado.','is-error');
+          document.querySelector('#pix-check-button').textContent='Gerar novo Pix';
+          document.querySelector('#pix-check-button').dataset.renew='1';
+        }
+        else if(manual)setStatus('Ainda não identificamos o pagamento. Aguardando…','is-waiting');
+      }catch(error){ if(manual)setStatus(error.message,'is-error'); }
+      finally{busy=false}
+    };
+    document.querySelector('#pix-copy-button')?.addEventListener('click',async()=>{
+      try{await navigator.clipboard.writeText(charge.qr_code||'');notify('Código Pix copiado.')}
+      catch(_){const t=document.querySelector('#pix-copy');t.select();document.execCommand&&document.execCommand('copy');notify('Código Pix copiado.')}
     });
+    document.querySelector('#pix-check-button')?.addEventListener('click',async e=>{
+      if(e.currentTarget.dataset.renew){
+        const btn=e.currentTarget; btn.disabled=true; setStatus('Gerando novo Pix…','is-waiting');
+        try{showPixCharge(await createPixCharge())}catch(err){setStatus(err.message,'is-error');btn.disabled=false}
+        return;
+      }
+      check(true);
+    });
+    // verificação automática a cada 4s (pausa quando a aba está oculta)
+    pixTimer=setInterval(()=>{ if(!document.hidden)check(false) },4000);
+    document.addEventListener('visibilitychange',function onVis(){ if(!pixTimer){document.removeEventListener('visibilitychange',onVis);return} if(!document.hidden)check(false) });
   };
   const createPixCharge = async () => {
     const response=await fetch('/api/payments/pix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:state.plan.value,description:`Matrícula ${state.plan.name} - ${state.unit.name}`,unit:state.unit.id,customer:state.person})});
     const result=await response.json(); if(!response.ok)throw new Error(result.error||'Não foi possível gerar o Pix.'); return result;
   };
 
+
   /* ---------- sucesso ---------- */
   function renderSuccess(){
     heading.innerHTML='';
-    const pay={pix:'Pix',card:'Cartão'}[state.payment];
-    content.innerHTML=`<div class="success-screen"><svg class="success-check" viewBox="0 0 90 90" aria-hidden="true"><rect class="sc-bg" x="17" y="17" width="56" height="56" transform="rotate(45 45 45)"/><path class="sc-path" d="M30 46l11 11 20-23"/></svg><h2>Pronto para começar.</h2><p>Sua escolha foi registrada nesta sessão. Confira os próximos passos com a equipe da unidade.</p><div class="success-recap"><div><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div><span>Plano</span><strong>${esc(state.plan.name)}</strong></div><div><span>Pagamento</span><strong>${pay}</strong></div><div><span>Total mensal</span><strong>${state.plan.price}</strong></div></div><a class="empty-link" href="/">Voltar ao site</a></div>`;
-    next.style.display='none';
-    if(!gsap)return;
-    const sc=content.querySelector('.success-screen');
-    gsap.fromTo('.sc-bg',{scale:0,transformOrigin:'50% 50%'},{scale:1,duration:.7,ease:'back.out(2)'});
-    const path=content.querySelector('.sc-path'),len=path.getTotalLength();
-    gsap.fromTo(path,{strokeDasharray:len,strokeDashoffset:len},{strokeDashoffset:0,duration:.6,ease:'power2.out',delay:.45});
-    gsap.from(sc.querySelectorAll('h2,p,.success-recap,.empty-link'),{y:22,opacity:0,duration:.6,stagger:.1,ease:'power3.out',delay:.5});
-    // confete em losangos (cores da marca)
-    const colors=['#e30613','#f1c928','#ffffff'];
-    for(let i=0;i<26;i++){
-      const s=document.createElement('i');s.className='confetti';s.style.background=colors[i%3];sc.appendChild(s);
-      const ang=Math.random()*Math.PI*2,dist=110+Math.random()*150;
-      gsap.fromTo(s,{x:0,y:0,scale:0,rotation:45,opacity:1},{x:Math.cos(ang)*dist,y:Math.sin(ang)*dist+60,scale:.6+Math.random()*.9,rotation:45+Math.random()*360,opacity:0,duration:1.3+Math.random()*.7,ease:'power3.out',delay:.35,onComplete:()=>s.remove()});
-    }
+    const fresh=justPaid; justPaid=false;
+    const first=esc((state.person.name||'').trim().split(' ')[0]||'aluno');
+    const ticks=Array.from({length:12},(_,k)=>{const a=k*Math.PI/6,c=Math.cos(a),s2=Math.sin(a);return `<line x1="${(60+c*70).toFixed(1)}" y1="${(60+s2*70).toFixed(1)}" x2="${(60+c*84).toFixed(1)}" y2="${(60+s2*84).toFixed(1)}"/>`}).join('');
+    const title='Pagamento confirmado.'.split(' ').map(w=>`<span class="word">${[...w].map(ch=>`<span class="ltr">${ch}</span>`).join('')}</span>`).join(' ');
+    content.innerHTML=`<div class="success-screen"><div class="seal-wrap"><i class="seal-glow"></i><i class="seal-ripple"></i><i class="seal-ripple"></i><svg class="paid-seal" viewBox="-32 -32 184 184" role="img" aria-label="Pagamento confirmado"><g class="seal-ticks">${ticks}</g><circle class="seal-ring" cx="60" cy="60" r="57"/><circle class="seal-fill" cx="60" cy="60" r="50"/><path class="seal-check" d="M37 62l16 16 31-35"/></svg></div><h2 aria-label="Pagamento confirmado."><span aria-hidden="true">${title}</span></h2><p class="paid-amount"><span>Valor pago</span><b>${state.plan.price}</b></p><p class="paid-note">Tudo certo, ${first}. Confira os próximos passos com a equipe da unidade.</p><a class="empty-link" href="/">Voltar ao site</a></div>`;
+    next.style.display='none'; document.querySelector('.checkout-actions').style.display='none';
+    if(!gsap||!fresh||reduceMotion)return;
+    const sc=content.querySelector('.success-screen'), q=sel=>sc.querySelector(sel), qa=sel=>sc.querySelectorAll(sel);
+    const ring=q('.seal-ring'), fill=q('.seal-fill'), check=q('.seal-check'), seal=q('.paid-seal');
+    const rl=ring.getTotalLength(), cl=check.getTotalLength();
+    const amountEl=q('.paid-amount b'), counter={v:0};
+    const rest=[q('.paid-amount'),q('.paid-note'),q('.empty-link')];
+    gsap.set(ring,{strokeDasharray:rl,strokeDashoffset:rl,rotation:-90,svgOrigin:'60 60'});
+    gsap.set(fill,{scale:0,svgOrigin:'60 60'});
+    gsap.set(check,{strokeDasharray:cl,strokeDashoffset:cl,opacity:0});
+    gsap.set(qa('.seal-ticks line'),{opacity:0,scale:.6,svgOrigin:'60 60'});
+    gsap.set(q('.seal-glow'),{opacity:0,scale:.4});
+    gsap.set(qa('.seal-ripple'),{opacity:0});
+    gsap.set(qa('.ltr'),{opacity:0,y:'55%'});
+    gsap.set(rest,{opacity:0,y:12});
+    amountEl.textContent=fmt(0);
+    gsap.timeline({delay:.15})
+      .to(ring,{strokeDashoffset:0,duration:1.3,ease:'power2.inOut'},0)                              // contorno desenha devagar
+      .to(q('.seal-glow'),{opacity:1,scale:1,duration:1.6,ease:'power2.out'},.25)                      // brilho de fundo acende
+      .to(fill,{scale:1,duration:.8,ease:'back.out(1.6)'},1.05)                                        // verde preenche
+      .set(check,{opacity:1},1.6)
+      .to(check,{strokeDashoffset:0,duration:1.1,ease:'power2.inOut'},1.6)                             // check desenha devagar
+      .to(seal,{scale:1.07,duration:.24,yoyo:true,repeat:1,ease:'sine.inOut',transformOrigin:'50% 50%'},2.6)
+      .to(qa('.seal-ticks line'),{keyframes:{opacity:[0,1,0],scale:[.6,1,1.35]},duration:1,ease:'power2.out',stagger:.025},2.6)   // raios finos
+      .fromTo(qa('.seal-ripple'),{opacity:.55,scale:1},{opacity:0,scale:2.6,duration:1.6,ease:'power2.out',stagger:.3},2.6)           // ondas
+      .to(qa('.ltr'),{opacity:1,y:0,duration:.55,ease:'power3.out',stagger:.04},2.85)                  // título letra por letra
+      .to(rest,{opacity:1,y:0,duration:.55,ease:'power3.out',stagger:.14},3.4)
+      .to(counter,{v:state.plan.value,duration:1.4,ease:'power2.out',onUpdate:()=>{amountEl.textContent=fmt(counter.v)},onComplete:()=>{amountEl.textContent=state.plan.price}},3.4);
   }
 
   /* ---------- fluxo ---------- */
   function render(){
+    if(!state.confirmed)stopPix();
     planCtl?.abort(); planCtl=new AbortController();
     if(planS&&gsap)gsap.killTweensOf(planS);
     renderStepper();renderSummary();
     if(state.confirmed){renderSuccess();syncRoute();return}
-    next.style.display='inline-flex';
+    next.style.display='inline-flex'; document.querySelector('.checkout-actions').style.display='';
     if(!state.unit){renderMissing();return}
     if(state.step===1)renderPlan();
     if(state.step===2)renderPerson();
@@ -318,6 +376,7 @@
   }
   function moveTo(step){
     if(transitioning||step<1||step>3)return;
+    stopPix(); pixCharge=null;
     transitioning=true;
     const dir=step>state.step?1:-1;
     const finish=()=>{state.step=step;render();transitioning=false;window.scrollTo({top:0,behavior:'smooth'});animateContent(dir)};

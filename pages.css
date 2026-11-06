@@ -10,3 +10,5 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior-x:n
 html,body{width:100%;max-width:100%;overflow-x:hidden!important}
 
 @media(max-width:680px){#gavioes-spa-layer,.units-header,.units-hero-copy,.units-hero-stat,.units-card,.detail-shell,.page-hero{will-change:transform,opacity;transform:translateZ(0)}}
+
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

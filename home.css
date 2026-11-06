@@ -81,7 +81,7 @@ body.spa-open{overflow:hidden}
 .desktop-nav a:after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
 .desktop-nav a:hover:after,.desktop-nav a.is-active:after{transform:scaleX(1)}
 .desktop-nav a.is-active{color:var(--yellow)}
-.header-cta,.button{position:relative;overflow:hidden;transition:background .3s,color .3s,border-color .3s,transform .3s}
+.header-cta,.button{position:relative;overflow:hidden;transition:background .3s,color .3s,border-color .3s}
 .header-cta:hover{background:var(--red-dark)}
 .header-cta .ico,.button .ico,.text-link .ico,.mobile-menu-cta .ico{font-size:18px;transition:transform .4s var(--ease)}
 .header-cta:hover .ico,.button:hover .ico,.text-link:hover .ico,.mobile-menu-cta:hover .ico{transform:translateX(5px)}
@@ -171,5 +171,5 @@ body.spa-open{overflow:hidden}
   .hero-foot span{padding:6px 10px}
   .footer-bottom{flex-direction:row;flex-wrap:wrap}
 }
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
 .footer-legal{grid-column:1/-1;margin-top:24px;padding-top:22px;border-top:1px solid rgba(255,255,255,.14);display:grid;gap:8px;color:#938c94;font-size:11px;line-height:1.6}.footer-legal p{margin:0}.footer-legal strong{color:#d2cbd0}.footer-legal a{color:#fff}

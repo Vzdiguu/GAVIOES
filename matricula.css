@@ -187,3 +187,27 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior-x:n
 html,body{width:100%;max-width:100%;overflow-x:hidden!important}#gavioes-spa-layer{width:100%;max-width:100vw;overflow-x:hidden!important}
 
 .pix-checkout{padding:26px 0;text-align:center}.pix-checkout h2{margin:10px 0 8px}.pix-checkout p{max-width:560px;margin:0 auto 18px;color:#8d858d;line-height:1.6}.pix-qr-code{display:block;width:min(240px,75vw);height:auto;margin:22px auto;padding:12px;background:#fff;border-radius:12px}.pix-copy-label{display:block;margin:20px 0 7px;text-align:left;color:#bdb5bd;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.pix-checkout textarea{display:block;width:100%;min-height:92px;padding:13px;border:1px solid rgba(255,255,255,.18);border-radius:10px;background:#17151a;color:#fff;font:12px/1.5 monospace;resize:vertical}.pix-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:16px}.pix-actions .checkout-button{width:auto}.pix-status{font-size:12px!important;color:#bdb5bd!important}
+
+/* Pix: QR + status ao vivo */
+.pix-qr-wrap{position:relative;width:fit-content;margin:22px auto}.pix-qr-wrap .pix-qr-code{margin:0;transition:transform .5s cubic-bezier(.2,.8,.2,1),filter .5s,opacity .5s}
+
+.pix-qr-wrap.is-paid .pix-qr-code{filter:blur(6px) brightness(.55);transform:scale(.94)}
+.pix-status{display:flex;align-items:center;justify-content:center;gap:9px}.pix-dot{width:9px;height:9px;background:var(--yellow);transform:rotate(45deg);flex:none}
+.pix-status.is-waiting .pix-dot{animation:pixPulse 1.4s ease-in-out infinite}.pix-status.is-paid{color:#fff!important;font-weight:800}.pix-status.is-paid .pix-dot{background:#2fd27a}.pix-status.is-error{color:#ff8b8b!important}.pix-status.is-error .pix-dot{background:var(--red)}
+@keyframes pixPulse{0%,100%{opacity:1;transform:rotate(45deg) scale(1)}50%{opacity:.35;transform:rotate(45deg) scale(.6)}}
+.checkout-card{position:relative}
+@media(prefers-reduced-motion:reduce){.pix-status.is-waiting .pix-dot{animation:none}.shock,.pay-flash{display:none}}
+
+
+/* selo de pagamento confirmado */
+.seal-wrap{position:relative;width:190px;height:190px;margin:-6px auto 6px;display:grid;place-items:center}
+.paid-seal{position:relative;display:block;width:190px;height:190px;overflow:visible}
+.paid-seal .seal-ring{fill:none;stroke:#2fd27a;stroke-width:3}.paid-seal .seal-fill{fill:#17b55b}.paid-seal .seal-check{fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
+.paid-seal .seal-ticks line{stroke:#2fd27a;stroke-width:3.5;stroke-linecap:round;opacity:0}
+.seal-glow{position:absolute;inset:-34px;border-radius:50%;background:radial-gradient(circle,rgba(47,210,122,.34) 0,rgba(47,210,122,.12) 42%,transparent 68%);opacity:.5;pointer-events:none}
+.seal-ripple{position:absolute;left:50%;top:50%;width:116px;height:116px;margin:-58px 0 0 -58px;border:2px solid #2fd27a;border-radius:50%;opacity:0;pointer-events:none}
+.success-screen h2 .word{display:inline-block;white-space:nowrap}.success-screen h2 .ltr{display:inline-block;will-change:transform,opacity}
+.success-screen p{max-width:420px;margin-left:auto;margin-right:auto}
+.paid-amount{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:18px!important;margin-bottom:6px!important}.paid-amount span{color:#8d858d;font-size:12px;font-weight:700}.paid-amount b{color:#fff;font-size:30px;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.paid-note{margin-top:10px!important}
+.success-screen .empty-link{margin-top:26px}
