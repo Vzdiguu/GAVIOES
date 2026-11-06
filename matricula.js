@@ -380,8 +380,13 @@
   /* ---------- etapa 3: pagamento ---------- */
   function renderPayment(){
     heading.innerHTML='<h2>Revise e finalize.</h2><p>Confira suas escolhas e selecione a forma de pagamento para concluir o próximo passo.</p>';
-    content.innerHTML=`<div class="review-card"><div class="review-row"><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div class="review-row"><span>Plano</span><strong>${esc(state.plan?.name || 'Não selecionado')}</strong></div><div class="review-row"><span>Aluno</span><strong>${esc(state.person.name || 'Não informado')}</strong></div><div class="review-row"><span>Valor desta cobrança</span><strong>${state.plan?.chargePrice || state.plan?.price || 'R$ 0,00'}</strong></div></div><div class="payment-grid">${[['pix','Pix','Pagamento via Pix',false],['card','Cartão','Indisponível: integração não configurada',true]].map(([v,t,s,disabled])=>`<label class="payment-option ${disabled?'is-disabled':''}"><input type="radio" name="payment" value="${v}" ${state.payment===v?'checked':''} ${disabled?'disabled':''}><span><strong>${t}</strong><small>${s}</small></span></label>`).join('')}</div><div class="payment-note">O pagamento será processado via Pix. Acompanhe nesta tela a confirmação da cobrança.</div><section class="contract-box" aria-label="Termo do contrato"><div class="term-cta">${termButton(state.plan)}</div></section><label class="checkout-check"><input id="review-ok" type="checkbox"><span>Confirmo que revisei meus dados, plano e unidade escolhida.</span></label><label class="checkout-check"><input id="contract-ok" type="checkbox"><span>Li e aceito o termo do contrato do plano ${esc(state.plan?.name||'selecionado')}.</span></label>`;
-    content.querySelectorAll('input[name="payment"]').forEach(el=>el.addEventListener('change',()=>{state.payment=el.value;if(gsap)gsap.fromTo(el.closest('.payment-option'),{scale:.96},{scale:1,duration:.5,ease:'back.out(3)'})}));
+    content.innerHTML=`<div class="review-card"><div class="review-row"><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div class="review-row"><span>Plano</span><strong>${esc(state.plan?.name || 'Não selecionado')}</strong></div><div class="review-row"><span>Aluno</span><strong>${esc(state.person.name || 'Não informado')}</strong></div><div class="review-row"><span>Valor desta cobrança</span><strong>${state.plan?.chargePrice || state.plan?.price || 'R$ 0,00'}</strong></div></div><div class="payment-grid">${[['pix','Pix','Pagamento via Pix',false],['card','Cartão','Cartão de crédito',false]].map(([v,t,s,disabled])=>`<label class="payment-option ${disabled?'is-disabled':''}"><input type="radio" name="payment" value="${v}" ${state.payment===v?'checked':''} ${disabled?'disabled':''}><span><strong>${t}</strong><small>${s}</small></span></label>`).join('')}</div><div class="payment-note" id="payment-note">O pagamento será processado via Pix. Acompanhe nesta tela a confirmação da cobrança.</div><section class="contract-box" aria-label="Termo do contrato"><div class="term-cta">${termButton(state.plan)}</div></section><label class="checkout-check"><input id="review-ok" type="checkbox"><span>Confirmo que revisei meus dados, plano e unidade escolhida.</span></label><label class="checkout-check"><input id="contract-ok" type="checkbox"><span>Li e aceito o termo do contrato do plano ${esc(state.plan?.name||'selecionado')}.</span></label>`;
+    const paymentNote=content.querySelector('#payment-note');
+    content.querySelectorAll('input[name="payment"]').forEach(el=>el.addEventListener('change',()=>{
+      state.payment=el.value;
+      paymentNote.textContent=state.payment==='card'?'Pagamento selecionado: cartão de crédito.':'O pagamento será processado via Pix. Acompanhe nesta tela a confirmação da cobrança.';
+      if(gsap)gsap.fromTo(el.closest('.payment-option'),{scale:.96},{scale:1,duration:.5,ease:'back.out(3)'});
+    }));
   }
 
   const finishEnrollment = () => {
@@ -524,7 +529,7 @@
     if(!valid())return;
     if(state.step<3)moveTo(state.step+1);
     else{
-      if(state.payment!=='pix'){notify('No momento, o checkout aceita somente Pix.');return}
+      if(state.payment==='card'){notify('Não foi possível realizar a cobrança no cartão. Tente novamente mais tarde.');return}
       if(!pixCharge){
         transitioning=true; next.disabled=true; next.textContent='Gerando Pix…';
         createPixCharge().then(showPixCharge).catch(error=>{notify(error.message);if(error.status===502)chargeRequestId=makeRequestId();next.disabled=false;next.textContent='Finalizar matrícula';}).finally(()=>{transitioning=false;});
