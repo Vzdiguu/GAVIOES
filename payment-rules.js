@@ -1,7 +1,10 @@
 const PLAN_CATALOG = Object.freeze({
-  essential: Object.freeze({ name: 'Gaviões Essential', valueCents: 8990 }),
-  performance: Object.freeze({ name: 'Gaviões Performance', valueCents: 11990 }),
-  black: Object.freeze({ name: 'Gaviões Black', valueCents: 14990 }),
+  start_monthly: Object.freeze({ name: 'START RECORRENTE MENSAL', valueCents: 11990 }),
+  plus_monthly: Object.freeze({ name: 'PLUS MENSAL', valueCents: 14900 }),
+  start_annual: Object.freeze({ name: 'START RECORRENTE ANUAL', valueCents: 13900 }),
+  plus_annual: Object.freeze({ name: 'PLUS RECORRENTE ANUAL', valueCents: 15900 }),
+  day_pass: Object.freeze({ name: '1 ACESSO AVULSO', valueCents: 3000 }),
+  bioimpedance_monthly: Object.freeze({ name: 'BIOIMPEDÂNCIA RECORRENTE 1X/MÊS', valueCents: 1990 }),
 });
 
 function digits(value) {

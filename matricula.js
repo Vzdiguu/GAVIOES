@@ -1,16 +1,60 @@
 (() => {
   const gsap = window.gsap;
   const plans = [
-    {id:'essential',name:'Gaviões Essential',tag:'Para começar',note:'Treino simples, direto e sem complicação.',desc:'O essencial para manter seu treino em dia.',price:'R$ 89,90',value:89.9,period:'/mês',contract:['Acesso à unidade escolhida durante a vigência do plano.','Mensalidade recorrente de R$ 89,90, cobrada mensalmente no meio de pagamento escolhido.','O plano inclui a estrutura e os serviços descritos na oferta vigente da unidade.','Cancelamentos, pausas e alterações dependem de solicitação à unidade e das condições comerciais informadas no atendimento.']},
-    {id:'performance',name:'Gaviões Performance',tag:'Mais escolhido',note:'O equilíbrio ideal entre liberdade e evolução.',desc:'Mais liberdade, mais modalidades e mais evolução.',price:'R$ 119,90',value:119.9,period:'/mês',featured:true,contract:['Acesso à unidade escolhida e às modalidades incluídas na oferta Performance vigente.','Mensalidade recorrente de R$ 119,90, cobrada mensalmente no meio de pagamento escolhido.','O plano contempla os benefícios apresentados no momento da contratação, sujeitos à disponibilidade e regras da unidade.','Cancelamentos, pausas e alterações dependem de solicitação à unidade e das condições comerciais informadas no atendimento.']},
-    {id:'black',name:'Gaviões Black',tag:'Experiência completa',note:'Para quem quer fazer da Gaviões parte da rotina.',desc:'A experiência completa para quem não para.',price:'R$ 149,90',value:149.9,period:'/mês',contract:['Acesso à unidade escolhida e à experiência completa prevista na oferta Black vigente.','Mensalidade recorrente de R$ 149,90, cobrada mensalmente no meio de pagamento escolhido.','Os benefícios adicionais são aqueles apresentados no momento da contratação e podem seguir regras específicas da unidade.','Cancelamentos, pausas e alterações dependem de solicitação à unidade e das condições comerciais informadas no atendimento.']}
+    {
+      id:'start_monthly',name:'START RECORRENTE MENSAL',tag:'Plano mensal',note:'Vigência mensal · unidade de cadastro',desc:'Mensalidade flexível para treinar na unidade escolhida.',price:'R$ 119,90',value:119.9,period:'/mês',priceLabel:'Mensalidade',featured:true,
+      vigencia:'Vigência mensal, com renovação por ciclos mensais.',escopo:'Acesso somente à unidade de cadastro.',
+      features:['Acesso às aulas coletivas.','Prescrição de treinos e acompanhamento de instrutores.','Sem restrição de horários.','Sem multas ou taxas de cancelamento.','Zero anuidade.','Acesso apenas na unidade de cadastro.'],
+      cancelamento:'O plano não exige fidelidade anual. O cancelamento poderá ser solicitado à unidade, sem multa ou taxa de cancelamento.'
+    },
+    {
+      id:'plus_monthly',name:'PLUS MENSAL',tag:'Acesso em outras unidades',note:'Vigência mensal · exceto unidades premium',desc:'Treine em diferentes unidades Gaviões, com os benefícios do plano Plus.',price:'R$ 149,00',value:149,period:'/mês',priceLabel:'Mensalidade',
+      vigencia:'Vigência mensal, com renovação por ciclos mensais.',escopo:'Acesso às Academias Gaviões, exceto unidades premium.',
+      features:['Acesso às aulas coletivas.','Prescrição de treinos e acompanhamento de instrutores.','Sem restrição de horários.','Zero anuidade.','Zero taxa.','Acesso liberado em outras unidades, exceto unidades premium.'],
+      cancelamento:'A vigência é mensal e não há fidelidade de 12 meses indicada nesta oferta. O pedido de cancelamento deve ser feito à unidade antes do próximo ciclo.'
+    },
+    {
+      id:'start_annual',name:'START RECORRENTE ANUAL',tag:'Fidelidade de 12 meses',note:'R$ 139,00 por mês · período de 12 meses',desc:'Plano anual para treinar na unidade de cadastro.',price:'R$ 139,00',value:139,period:'/mês',priceLabel:'Mensalidade',totalPrice:'R$ 1.668,00',
+      vigencia:'Vigência contratual de 12 meses, com mensalidades recorrentes de R$ 139,00.',escopo:'Acesso somente à unidade de cadastro.',
+      features:['Acesso às aulas coletivas.','Prescrição de treinos e acompanhamento de instrutores.','Sem restrição de horários.','Fidelidade de 12 meses.','Zero anuidade.','Zero taxa.','Acesso apenas na unidade de cadastro.'],
+      cancelamento:'O plano possui fidelidade de 12 meses. O pedido de cancelamento deve ser feito à unidade. Este termo não acrescenta multa ou taxa que não esteja expressamente informada e aceita na oferta.'
+    },
+    {
+      id:'plus_annual',name:'PLUS RECORRENTE ANUAL',tag:'Fidelidade de 12 meses',note:'R$ 159,00 por mês · período de 12 meses',desc:'Plano anual Plus com acesso às unidades Gaviões, exceto premium.',price:'R$ 159,00',value:159,period:'/mês',priceLabel:'Mensalidade',totalPrice:'R$ 1.908,00',
+      vigencia:'Vigência contratual de 12 meses, com mensalidades recorrentes de R$ 159,00.',escopo:'Acesso às Academias Gaviões, exceto unidades premium.',
+      features:['Acesso às aulas coletivas.','Prescrição de treinos e acompanhamento de instrutores.','Sem restrição de horários.','Fidelidade de 12 meses.','Zero anuidade.','Zero taxa.','Acesso liberado em outras unidades, exceto unidades premium.'],
+      cancelamento:'O plano possui fidelidade de 12 meses. O pedido de cancelamento deve ser feito à unidade. Este termo não acrescenta multa ou taxa que não esteja expressamente informada e aceita na oferta.'
+    },
+    {
+      id:'day_pass',name:'1 ACESSO AVULSO',tag:'Uso por 1 dia',note:'Um único acesso · duração de 1 dia',desc:'Uma entrada avulsa para treinar e participar das aulas coletivas.',price:'R$ 30,00',value:30,period:'pagamento único',priceLabel:'Preço único',
+      vigencia:'Acesso único, válido por 1 dia.',escopo:'Um ingresso para a unidade escolhida, com acesso às aulas coletivas.',
+      features:['Único acesso.','Acesso às aulas coletivas.','Duração de 1 dia.','Não é uma mensalidade e não renova automaticamente.'],
+      cancelamento:'Esta é uma aquisição avulsa, de uso único e sem renovação mensal.'
+    },
+    {
+      id:'bioimpedance_monthly',name:'BIOIMPEDÂNCIA RECORRENTE 1X/MÊS',tag:'1 crédito mensal',note:'Não inclui acesso à academia',desc:'Um teste mensal de composição corporal realizado em aparelho InBody.',price:'R$ 19,90',value:19.9,period:'/mês',priceLabel:'Mensalidade do adicional',
+      vigencia:'Vigência mensal, com direito a 1 crédito por mês.',escopo:'A contratação não dá direito ao uso da academia; para utilizar o serviço, é necessário possuir plano ativo ou acesso avulso.',
+      features:['Teste de composição corporal.','Realizado em aparelho InBody.','Um crédito mensal.','Sem multas ou taxa de cancelamento.','Não inclui acesso à academia; exige plano ativo ou acesso avulso.'],
+      cancelamento:'O adicional pode ser cancelado mediante solicitação à unidade, sem multa ou taxa de cancelamento.'
+    }
   ];
   const params = new URLSearchParams(location.search);
   const slugTitle = slug => String(slug || '').replace(/^(sp|ce|df|ba|go|pe|pr|se|to|pa)/i,'').replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()).trim() || 'Sua unidade';
   const queryUnit = params.get('unidade');
   const saved = (() => { try { return JSON.parse(sessionStorage.getItem('gavioesCheckoutState') || 'null') || {}; } catch (_) { return {}; } })();
   const unit = queryUnit ? {id:queryUnit,name:params.get('nome') || slugTitle(queryUnit),meta:'Unidade Gaviões 24 horas'} : (saved.unit || null);
-  const state = {step:queryUnit ? 1 : (saved.step || (unit ? 1 : 0)),unit,plan:queryUnit ? null : (saved.plan || null),planIndex:queryUnit ? 1 : (saved.planIndex ?? 1),person:queryUnit ? {name:'',email:'',phone:'',cpf:''} : (saved.person || {name:'',email:'',phone:'',cpf:''}),errors:{},payment:'pix',confirmed:queryUnit ? false : (!!saved.confirmed && saved.payment === 'pix')};
+  const savedPlanId=String(saved.plan?.id||'');
+  const savedPlan=plans.find(plan=>plan.id===savedPlanId)||null;
+  const legacyPlan=Boolean(savedPlanId)&&!savedPlan;
+  const defaultPlan=plans[0];
+  const state = {
+    step:queryUnit?1:(legacyPlan?1:(saved.step||(unit?1:0))),
+    unit,
+    plan:queryUnit?defaultPlan:(savedPlan||(unit?defaultPlan:null)),
+    planIndex:savedPlan?plans.indexOf(savedPlan):0,
+    person:queryUnit?{name:'',email:'',phone:'',cpf:''}:(saved.person||{name:'',email:'',phone:'',cpf:''}),
+    errors:{},payment:'pix',confirmed:queryUnit?false:(!legacyPlan&&!!saved.confirmed&&saved.payment==='pix')
+  };
 
   const content = document.querySelector('#step-content');
   const heading = document.querySelector('#flow-title');
@@ -95,27 +139,69 @@
 
   /* ---------- etapa 1: planos (carrossel 3D) ---------- */
   let planCtl = null, planS = null;
-  const termButton = p => `<button class="term-open" type="button" data-term-plan="${p.id}">Contrato</button>`;
-  const contractDocument = p => `<article class="contract-document"><p class="contract-document-kicker">DOCUMENTO DA MATRÍCULA</p><h1 id="contract-modal-title">Termo de contrato</h1><h2>${p.name}</h2><p>Este Termo de Adesão estabelece as condições para utilização dos serviços da Academia Gaviões pelo aluno identificado no cadastro da matrícula.</p><h3>1. Partes</h3><p><strong>Contratada:</strong> ACADEMIA GAVIOES FRANQUEADORA LTDA, CNPJ 34.265.772/000177, Av. São Miguel, 6813, Vila Norma, São Paulo/SP, 08070002, responsável pelo gerenciamento da rede, sem prejuízo da atuação da unidade escolhida.</p><p><strong>Unidade matriz:</strong> ACADEMIA OS GAVIOES DO KARATE LTDA, CNPJ 53.102.695/000189, Av. Emílio Ribas, 3143, Vila Galvão, Guarulhos/SP, 07051001.</p><h3>2. Objeto</h3><p>O presente termo regula a adesão do aluno ao plano <strong>${p.name}</strong>, com acesso à unidade escolhida e aos serviços incluídos na oferta comercial vigente no momento da contratação.</p><h3>3. Vigência e acesso</h3><p>A contratação tem vigência mensal e sucessiva, iniciando-se após a confirmação da matrícula e do primeiro pagamento. O acesso é pessoal, intransferível e condicionado à situação regular do cadastro e dos pagamentos.</p><h3>4. Mensalidade e cobrança</h3><p>A mensalidade do plano é de <strong>${p.price} por mês</strong>, cobrada no meio de pagamento selecionado pelo aluno. Eventuais taxas, serviços adicionais, reajustes e condições promocionais serão informados antes da contratação ou em comunicação específica.</p><h3>5. O que está incluído</h3><ul>${p.contract.map(item=>`<li>${item}</li>`).join('')}</ul><h3>6. Regras de utilização</h3><p>O aluno deverá respeitar os horários, normas de segurança, regulamento interno, orientações dos profissionais e regras de uso de equipamentos. A unidade poderá restringir temporariamente áreas ou atividades por manutenção, segurança, lotação ou programação especial.</p><h3>7. Responsabilidade do aluno</h3><p>O aluno declara estar apto a realizar atividades físicas, compromete-se a informar limitações relevantes e a seguir as orientações da equipe. A Academia poderá solicitar avaliação ou autorização médica quando entender necessário.</p><h3>8. Cancelamento, pausa e alteração</h3><p>Solicitações de cancelamento, pausa, transferência ou alteração deverão ser feitas pelos canais da unidade, com antecedência e observância das condições comerciais e legais aplicáveis. A simples ausência aos treinos não encerra a contratação nem interrompe cobranças.</p><h3>9. Dados pessoais</h3><p>Os dados fornecidos serão tratados para cadastro, prestação dos serviços, cobrança, comunicação e cumprimento de obrigações legais, conforme a Política de Privacidade da Academia Gaviões.</p><h3>10. Aceite eletrônico</h3><p>Ao marcar “Li e aceito o termo” e concluir o fluxo, o aluno confirma que leu este documento, que as informações fornecidas são verdadeiras e que concorda com as condições do plano escolhido.</p><h3>11. Atendimento e foro</h3><p>Dúvidas e solicitações devem ser encaminhadas à unidade escolhida ou aos canais oficiais da Academia Gaviões. Fica respeitada a legislação brasileira e o foro legalmente competente.</p><p class="contract-document-date">Termo referente ao plano selecionado e às condições exibidas na data da matrícula.</p></article>`;
+  const termButton = p => `<button class="term-open" type="button" data-term-plan="${p.id}">Ler contrato completo</button>`;
+  const contractDocument = p => {
+    const benefits=p.features.map(item=>`<li>${esc(item)}</li>`).join('');
+    const customer=state.person;
+    const priceClause=p.totalPrice
+      ? `O preço é de ${esc(p.price)} por mês durante 12 meses, totalizando ${esc(p.totalPrice)} no período contratado.`
+      : p.period==='/mês'
+        ? `O preço é de ${esc(p.price)} por mês, conforme o ciclo indicado nesta oferta.`
+        : `O preço total da aquisição é de ${esc(p.price)}, em pagamento único.`;
+    return `<article class="contract-document">
+      <p class="contract-document-kicker">DOCUMENTO INTEGRAL DE CONTRATAÇÃO</p>
+      <h1 id="contract-modal-title">Contrato de adesão aos serviços</h1>
+      <h2>${esc(p.name)}</h2>
+      <p>Este instrumento reúne, em um único documento, as condições da contratação escolhida pelo aluno, a identificação das partes, o preço, a vigência, os serviços incluídos e as regras de utilização.</p>
+      <h3>1. Partes e identificação</h3>
+      <p><strong>Contratada:</strong> ACADEMIA GAVIÕES FRANQUEADORA LTDA., CNPJ 34.265.772/0001-77, com endereço na Av. São Miguel, 6813, Vila Norma, São Paulo/SP, CEP 08070-002, responsável pela administração da rede; e ACADEMIA OS GAVIÕES DO KARATE LTDA., CNPJ 53.102.695/0001-89, com endereço na Av. Emílio Ribas, 3143, Vila Galvão, Guarulhos/SP, CEP 07051-001, conforme os dados de identificação constantes do cadastro da Academia Gaviões.</p>
+      <p><strong>Contratante:</strong> ${esc(customer.name||'aluno identificado no cadastro')}; CPF ${esc(customer.cpf||'informado no cadastro')}; e-mail ${esc(customer.email||'informado no cadastro')}.</p>
+      <p><strong>Unidade escolhida:</strong> ${esc(state.unit?.name||'unidade selecionada no checkout')}.</p>
+      <h3>2. Objeto da contratação</h3>
+      <p>O objeto é a contratação do produto <strong>${esc(p.name)}</strong>, de acordo com o escopo, as condições de acesso e os benefícios descritos neste instrumento. Os benefícios abaixo integram a oferta aceita pelo Contratante:</p>
+      <ul>${benefits}</ul>
+      <h3>3. Vigência, preço e forma de cobrança</h3>
+      <p>${esc(p.vigencia)} ${priceClause}</p>
+      <p>${esc(p.escopo)} O acesso ou a utilização do serviço dependem da confirmação do pagamento correspondente e da observância das regras deste contrato.</p>
+      <p>O meio de pagamento e a cobrança apresentados no checkout aplicam-se ao valor exibido. O Pix gerado nesta contratação corresponde a uma cobrança única; ciclos posteriores exigem a cobrança correspondente. Este termo não afirma que o checkout atual realize renovação automática.</p>
+      <h3>4. Regras específicas do produto</h3>
+      <p>${esc(p.escopo)}</p>
+      <p>Nos planos anuais, a fidelidade informada é de 12 meses. Nos produtos mensais, a vigência e os benefícios são os descritos no quadro de oferta. O acesso é pessoal e intransferível.</p>
+      <h3>5. Cancelamento e encerramento</h3>
+      <p>${esc(p.cancelamento)}</p>
+      <p>O pedido deve ser encaminhado à unidade escolhida por um canal oficial, com identificação do Contratante. A ausência às atividades, por si só, não constitui pedido formal de cancelamento.</p>
+      <h3>6. Utilização, segurança e convivência</h3>
+      <p>O Contratante deverá respeitar as normas internas, os horários de funcionamento, as orientações dos profissionais, as regras de segurança e a correta utilização dos equipamentos. A Academia poderá ajustar temporariamente espaços ou atividades por motivo de manutenção, segurança, lotação ou programação, preservados os direitos previstos na legislação aplicável.</p>
+      <h3>7. Saúde e responsabilidade</h3>
+      <p>O Contratante declara que fornecerá informações verdadeiras sobre sua condição de saúde, comunicará limitações relevantes e seguirá as orientações profissionais. A Academia poderá solicitar avaliação ou autorização médica quando houver motivo relacionado à segurança da atividade.</p>
+      <h3>8. Dados pessoais</h3>
+      <p>Os dados cadastrais serão utilizados para formalizar a contratação, prestar os serviços, administrar o acesso, processar pagamentos, comunicar informações relacionadas ao plano e cumprir obrigações legais, observada a Política de Privacidade da Academia Gaviões.</p>
+      <h3>9. Aceite eletrônico</h3>
+      <p>Ao selecionar “Li e aceito o termo” e concluir a contratação, o Contratante declara ter podido consultar este documento integral, confirma os dados informados e manifesta concordância com as condições e com a oferta específica selecionada.</p>
+      <h3>10. Atendimento e legislação aplicável</h3>
+      <p>Dúvidas, solicitações e reclamações poderão ser encaminhadas à unidade escolhida ou aos canais oficiais da Academia Gaviões. Aplicam-se a legislação brasileira e os direitos inderrogáveis do consumidor, ficando preservado o foro legalmente competente.</p>
+      <p class="contract-document-date">Oferta contratada: ${esc(p.name)} · ${esc(p.price)} ${esc(p.period)} · Unidade: ${esc(state.unit?.name||'selecionada no checkout')}.</p>
+    </article>`;
+  };
   const openContract = planId => { const p=plans.find(item=>item.id===planId)||state.plan; const modal=document.querySelector('#contract-modal'); const body=document.querySelector('#contract-modal-content'); const panel=modal?.querySelector('.contract-modal-panel'); const backdrop=modal?.querySelector('.contract-modal-backdrop'); if(!p||!modal||!body)return; body.innerHTML=contractDocument(p); modal.hidden=false; modal.setAttribute('aria-hidden','false'); document.body.classList.add('contract-modal-open'); if(gsap){gsap.killTweensOf([panel,backdrop]);gsap.set(backdrop,{opacity:0});gsap.set(panel,{opacity:0,y:28,scale:.96});gsap.timeline({defaults:{ease:'power3.out'}}).to(backdrop,{opacity:1,duration:.2}).to(panel,{opacity:1,y:0,scale:1,duration:.42,ease:'back.out(1.35)'},'-=.08');} modal.querySelector('.contract-modal-close')?.focus(); };
   const closeContract = () => { const modal=document.querySelector('#contract-modal'); const panel=modal?.querySelector('.contract-modal-panel'); const backdrop=modal?.querySelector('.contract-modal-backdrop'); if(!modal||modal.hidden)return; const finish=()=>{modal.hidden=true;modal.setAttribute('aria-hidden','true');document.body.classList.remove('contract-modal-open')}; if(gsap){gsap.killTweensOf([panel,backdrop]);gsap.timeline({onComplete:finish,defaults:{ease:'power2.in'}}).to(panel,{opacity:0,y:22,scale:.97,duration:.24}).to(backdrop,{opacity:0,duration:.18},'-=.1');}else finish(); };
   const bindTermButtons = root => root.querySelectorAll('[data-term-plan]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openContract(btn.dataset.termPlan)}));
   const renderContractPanel = () => { const el=document.querySelector('#plan-contract'); if(el) el.innerHTML=state.plan?`<div class="term-cta">${termButton(state.plan)}</div>`:'<p class="contract-empty">Escolha um plano para consultar o termo completo.</p>'; if(el)bindTermButtons(el); };
   const planCard = (p,i) => {
     const on = state.plan?.id===p.id;
-    return `<div class="plan-option ${on?'is-selected':''}" data-plan="${p.id}" tabindex="0" role="button" aria-pressed="${on}" aria-label="${p.name}, ${p.price} por mês">
-      <div class="plan-card-top"><span class="option-kicker">${p.featured?'MAIS ESCOLHIDO':'PLANO GAVIÕES'}</span><span class="plan-number">0${i+1}</span></div>
-      <h3>${p.name}</h3><span class="plan-tag">${p.tag}</span><p>${p.desc}</p>
-      <div class="plan-benefits-title">O que está incluído</div>
-      <ul class="plan-features"><li>Acesso à unidade ${esc(state.unit.name)}</li><li>Treino no seu ritmo 24 horas</li><li>Sem taxa de matrícula</li></ul>
-      <span class="plan-price-label">Valor mensal do plano</span>
-      <span class="plan-price"><strong>${p.price}</strong><small>${p.period}</small></span>
-      <span class="plan-note">${p.note}</span>
+    return `<div class="plan-option ${on?'is-selected':''}" data-plan="${p.id}" tabindex="0" role="button" aria-pressed="${on}" aria-label="${esc(p.name)}, ${esc(p.price)} ${esc(p.period)}">
+      <div class="plan-card-top"><span class="option-kicker">${p.featured?'EM DESTAQUE':'PLANO GAVIÕES'}</span><span class="plan-number">0${i+1}</span></div>
+      <h3>${esc(p.name)}</h3><span class="plan-tag">${esc(p.tag)}</span><p>${esc(p.desc)}</p>
+      <div class="plan-benefits-title">Condições e benefícios</div>
+      <ul class="plan-features">${p.features.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>
+      <span class="plan-price-label">${esc(p.priceLabel)}</span>
+      <span class="plan-price"><strong>${esc(p.price)}</strong><small>${esc(p.period)}</small></span>
+      <span class="plan-note">${esc(p.note)}</span>
       <span class="plan-select-label">${on?'Plano selecionado ✓':'Escolher este plano'}</span>
     </div>`;
   };
   function renderPlan(){
-    heading.innerHTML='<h2>Escolha seu plano.</h2><p>Um plano para acompanhar o seu ritmo, com a liberdade de treinar na unidade escolhida.</p>';
+    heading.innerHTML='<h2>Escolha sua opção.</h2><p>Compare as condições de cada plano, acesso avulso e bioimpedância antes de continuar.</p>';
     content.innerHTML=`<div class="selected-checkout-unit"><div><span class="option-kicker">SUA UNIDADE</span><strong>${esc(state.unit.name)}</strong><small>${esc(state.unit.meta)}</small></div><a class="change-unit" href="/unidades">Trocar unidade</a></div>
       <div class="plan-carousel">
         <button class="carousel-arrow carousel-prev" type="button" aria-label="Plano anterior">&#8592;</button>
@@ -249,7 +335,7 @@
   /* ---------- etapa 3: pagamento ---------- */
   function renderPayment(){
     heading.innerHTML='<h2>Revise e finalize.</h2><p>Confira suas escolhas e selecione a forma de pagamento para concluir o próximo passo.</p>';
-    content.innerHTML=`<div class="review-card"><div class="review-row"><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div class="review-row"><span>Plano</span><strong>${esc(state.plan?.name || 'Não selecionado')}</strong></div><div class="review-row"><span>Aluno</span><strong>${esc(state.person.name || 'Não informado')}</strong></div><div class="review-row"><span>Valor desta cobrança</span><strong>${state.plan?.price || 'R$ 0,00'}</strong></div></div><div class="payment-grid">${[['pix','Pix','Pagamento avulso via PushinPay',false],['card','Cartão','Indisponível: integração não configurada',true]].map(([v,t,s,disabled])=>`<label class="payment-option ${disabled?'is-disabled':''}"><input type="radio" name="payment" value="${v}" ${state.payment===v?'checked':''} ${disabled?'disabled':''}><span><strong>${t}</strong><small>${s}</small></span></label>`).join('')}</div><div class="payment-note">O Pix desta tela é uma cobrança única. Este checkout não processa renovações mensais automáticas.</div><section class="contract-box" aria-label="Termo do contrato"><div class="term-cta">${termButton(state.plan)}</div></section><label class="checkout-check"><input id="review-ok" type="checkbox"><span>Confirmo que revisei meus dados, plano e unidade escolhida.</span></label><label class="checkout-check"><input id="contract-ok" type="checkbox"><span>Li e aceito o termo do contrato do plano ${esc(state.plan?.name||'selecionado')}.</span></label>`;
+    content.innerHTML=`<div class="review-card"><div class="review-row"><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div class="review-row"><span>Plano</span><strong>${esc(state.plan?.name || 'Não selecionado')}</strong></div><div class="review-row"><span>Aluno</span><strong>${esc(state.person.name || 'Não informado')}</strong></div><div class="review-row"><span>Valor desta cobrança</span><strong>${state.plan?.price || 'R$ 0,00'}</strong></div></div><div class="payment-grid">${[['pix','Pix','Pagamento avulso via PushinPay',false],['card','Cartão','Indisponível: integração não configurada',true]].map(([v,t,s,disabled])=>`<label class="payment-option ${disabled?'is-disabled':''}"><input type="radio" name="payment" value="${v}" ${state.payment===v?'checked':''} ${disabled?'disabled':''}><span><strong>${t}</strong><small>${s}</small></span></label>`).join('')}</div><div class="payment-note">O Pix gerado nesta tela é uma cobrança única. Para planos mensais ou anuais, as cobranças dos ciclos seguintes ainda não são renovadas automaticamente por este checkout.</div><section class="contract-box" aria-label="Termo do contrato"><div class="term-cta">${termButton(state.plan)}</div></section><label class="checkout-check"><input id="review-ok" type="checkbox"><span>Confirmo que revisei meus dados, plano e unidade escolhida.</span></label><label class="checkout-check"><input id="contract-ok" type="checkbox"><span>Li e aceito o termo do contrato do plano ${esc(state.plan?.name||'selecionado')}.</span></label>`;
     content.querySelectorAll('input[name="payment"]').forEach(el=>el.addEventListener('change',()=>{state.payment=el.value;if(gsap)gsap.fromTo(el.closest('.payment-option'),{scale:.96},{scale:1,duration:.5,ease:'back.out(3)'})}));
   }
 

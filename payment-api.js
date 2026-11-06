@@ -8,7 +8,7 @@ const PUSHINPAY_API = (process.env.PUSHINPAY_API_URL || 'https://api.pushinpay.c
 const PUSHINPAY_TOKEN = process.env.PUSHINPAY_TOKEN || '';
 const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || '';
 const MAX_BODY = 100_000;
-const TERMS_VERSION = 'checkout-2026-11-06';
+const TERMS_VERSION = 'checkout-2026-11-06-planos-v2';
 
 function json(res, status, payload) {
   const data = JSON.stringify(payload);
@@ -238,7 +238,7 @@ async function createPix(req, res) {
 
   let charge;
   try {
-    const description = `Matrícula ${plan.name} - ${unitName}`.slice(0, 255);
+    const description = `Contratação ${plan.name} - ${unitName}`.slice(0, 255);
     charge = await providerRequest('/api/pix/cashIn', {
       method: 'POST',
       body: JSON.stringify({ value: plan.valueCents, description, webhook_url: webhookUrl, split_rules: [] }),
