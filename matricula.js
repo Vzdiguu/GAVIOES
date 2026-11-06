@@ -20,6 +20,7 @@
   const next = document.querySelector('#next-button');
   const toast = document.querySelector('#toast');
   let transitioning = false;
+  let pixCharge = null;
   document.addEventListener('click',e=>{const btn=e.target.closest('[data-term-plan]');if(btn){e.preventDefault();e.stopImmediatePropagation();openContract(btn.dataset.termPlan);return}if(e.target.closest('[data-contract-close]'))closeContract();},true);
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeContract();});
 
@@ -247,6 +248,27 @@
     content.querySelectorAll('input[name="payment"]').forEach(el=>el.addEventListener('change',()=>{state.payment=el.value;if(gsap)gsap.fromTo(el.closest('.payment-option'),{scale:.96},{scale:1,duration:.5,ease:'back.out(3)'})}));
   }
 
+  const finishEnrollment = () => {
+    state.confirmed=true; render(); transitioning=false; window.scrollTo({top:0,behavior:'smooth'});
+    if(gsap)gsap.fromTo(content,{opacity:0},{opacity:1,duration:.4});
+    notify('Pagamento confirmado. Matrícula preparada.');
+  };
+  const showPixCharge = charge => {
+    pixCharge=charge; next.style.display='none';
+    const image = charge.qr_code_base64 ? `<img class="pix-qr-code" src="${String(charge.qr_code_base64).startsWith('data:')?charge.qr_code_base64:`data:image/png;base64,${charge.qr_code_base64}`}" alt="QR Code Pix">` : '';
+    content.innerHTML=`<section class="pix-checkout"><span class="option-kicker">PAGAMENTO PIX</span><h2>Escaneie para pagar.</h2><p>Abra o aplicativo do seu banco, escaneie o QR Code ou copie o código Pix abaixo.</p>${image}<label class="pix-copy-label" for="pix-copy">Pix copia e cola</label><textarea id="pix-copy" readonly>${esc(charge.qr_code||'')}</textarea><div class="pix-actions"><button type="button" class="checkout-button checkout-button-primary" id="pix-copy-button">Copiar código</button><button type="button" class="checkout-button checkout-button-light" id="pix-check-button">Já paguei, verificar</button></div><p class="pix-status" id="pix-status">Aguardando pagamento.</p></section>`;
+    document.querySelector('#pix-copy-button')?.addEventListener('click',async()=>{await navigator.clipboard?.writeText(charge.qr_code||'');notify('Código Pix copiado.');});
+    document.querySelector('#pix-check-button')?.addEventListener('click',async()=>{
+      const status=document.querySelector('#pix-status'); status.textContent='Verificando pagamento…';
+      try { const response=await fetch(`/api/payments/pix/${encodeURIComponent(charge.id)}`); const result=await response.json(); if(!response.ok)throw new Error(result.error||'Não foi possível consultar o Pix.'); if(result.status==='paid') finishEnrollment(); else status.textContent='Ainda não identificado. Tente novamente em alguns instantes.'; }
+      catch(error){status.textContent=error.message;}
+    });
+  };
+  const createPixCharge = async () => {
+    const response=await fetch('/api/payments/pix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:state.plan.value,description:`Matrícula ${state.plan.name} - ${state.unit.name}`,unit:state.unit.id,customer:state.person})});
+    const result=await response.json(); if(!response.ok)throw new Error(result.error||'Não foi possível gerar o Pix.'); return result;
+  };
+
   /* ---------- sucesso ---------- */
   function renderSuccess(){
     heading.innerHTML='';
@@ -306,8 +328,13 @@
     if(!valid())return;
     if(state.step<3)moveTo(state.step+1);
     else{
+      if(state.payment==='pix' && !pixCharge){
+        transitioning=true; next.disabled=true; next.textContent='Gerando Pix…';
+        createPixCharge().then(showPixCharge).catch(error=>{notify(error.message);next.disabled=false;next.textContent='Finalizar matrícula';}).finally(()=>{transitioning=false;});
+        return;
+      }
       transitioning=true;
-      const done=()=>{state.confirmed=true;render();transitioning=false;window.scrollTo({top:0,behavior:'smooth'});if(gsap)gsap.fromTo(content,{opacity:0},{opacity:1,duration:.4});notify('Matrícula preparada para confirmação')};
+      const done=finishEnrollment;
       if(gsap)gsap.to(content,{y:-18,opacity:0,duration:.25,ease:'power2.in',onComplete:()=>{gsap.set(content,{y:0});done()}});else done();
     }
   });
