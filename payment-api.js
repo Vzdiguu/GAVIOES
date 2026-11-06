@@ -9,7 +9,7 @@ const PUSHINPAY_API = (process.env.PUSHINPAY_API_URL || 'https://api.pushinpay.c
 const PUSHINPAY_TOKEN = process.env.PUSHINPAY_TOKEN || '';
 const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || '';
 const MAX_BODY = 100_000;
-const TERMS_VERSION = 'checkout-2026-11-06-premium-v1';
+const TERMS_VERSION = 'checkout-2026-11-06-start-89-90-2-free-v1';
 
 function json(res, status, payload) {
   const data = JSON.stringify(payload);

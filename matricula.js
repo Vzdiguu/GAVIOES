@@ -2,7 +2,7 @@
   const gsap = window.gsap;
   const standardPlans = [
     {
-      id:'start_monthly',name:'START RECORRENTE MENSAL',tag:'Plano mensal',note:'Vigência mensal · unidade de cadastro',desc:'Mensalidade flexível para treinar na unidade escolhida.',price:'R$ 119,90',value:119.9,period:'/mês',priceLabel:'Mensalidade',featured:true,
+      id:'start_monthly',name:'START RECORRENTE MENSAL',tag:'2 MESES POR NOSSA CONTA',note:'R$ 89,90/mês · oferta promocional',desc:'Mensalidade flexível para treinar na unidade escolhida.',price:'R$ 89,90',value:89.9,period:'/mês',priceLabel:'Mensalidade promocional',featured:true,promo:'2 meses por nossa conta',
       vigencia:'Vigência mensal, com renovação por ciclos mensais.',escopo:'Acesso somente à unidade de cadastro.',
       features:['Acesso às aulas coletivas.','Prescrição de treinos e acompanhamento de instrutores.','Sem restrição de horários.','Sem multas ou taxas de cancelamento.','Zero anuidade.','Acesso apenas na unidade de cadastro.'],
       cancelamento:'O plano não exige fidelidade anual. O cancelamento poderá ser solicitado à unidade, sem multa ou taxa de cancelamento.'
@@ -236,7 +236,7 @@
     const on = state.plan?.id===p.id;
     return `<div class="plan-option ${on?'is-selected':''}" data-plan="${p.id}" tabindex="0" role="button" aria-pressed="${on}" aria-label="${esc(p.name)}, ${esc(p.price)} ${esc(p.period)}">
       <div class="plan-card-top"><span class="option-kicker">${p.featured?'EM DESTAQUE':'PLANO GAVIÕES'}</span><span class="plan-number">0${i+1}</span></div>
-      <h3>${esc(p.name)}</h3><span class="plan-tag">${esc(p.tag)}</span><p>${esc(p.desc)}</p>
+      <h3>${esc(p.name)}</h3><span class="plan-tag">${esc(p.tag)}</span><p>${esc(p.desc)}</p>${p.promo?`<div class="plan-promo">${esc(p.promo)}</div>`:''}
       <div class="plan-benefits-title">Condições e benefícios</div>
       <ul class="plan-features">${p.features.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>
       <span class="plan-price-label">${esc(p.priceLabel)}</span>

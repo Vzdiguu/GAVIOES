@@ -1,5 +1,5 @@
 const PLAN_CATALOG = Object.freeze({
-  start_monthly: Object.freeze({ name: 'START RECORRENTE MENSAL', valueCents: 11990 }),
+  start_monthly: Object.freeze({ name: 'START RECORRENTE MENSAL', valueCents: 8990 }),
   plus_monthly: Object.freeze({ name: 'PLUS MENSAL', valueCents: 14900 }),
   start_annual: Object.freeze({ name: 'START RECORRENTE ANUAL', valueCents: 13900 }),
   plus_annual: Object.freeze({ name: 'PLUS RECORRENTE ANUAL', valueCents: 15900 }),

@@ -33,7 +33,7 @@ function assertPriceParity(block, catalog, expectedIds) {
 
 test('os seis produtos regulares mantêm os preços oficiais do catálogo em centavos', () => {
   assert.deepEqual(Object.fromEntries(Object.entries(PLAN_CATALOG).map(([id, plan]) => [id, plan.valueCents])), {
-    start_monthly: 11990,
+    start_monthly: 8990,
     plus_monthly: 14900,
     start_annual: 13900,
     plus_annual: 15900,
