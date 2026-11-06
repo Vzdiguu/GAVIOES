@@ -1,5 +1,5 @@
 {
-  "id": "/",
+  "id": "/painel/",
   "name": "Painel Gaviões",
   "short_name": "Gaviões",
   "description": "Painel privado de matrículas, Pix e pagamentos da Academia Gaviões.",
@@ -11,8 +11,23 @@
   "background_color": "#0d0c0f",
   "theme_color": "#e30613",
   "icons": [
-    {"src": "/painel/icons/app-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "/painel/icons/app-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    {"src": "/painel/icons/app-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {
+      "src": "/painel/icons/app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/painel/icons/app-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/painel/icons/app-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

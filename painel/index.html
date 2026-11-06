@@ -56,7 +56,7 @@ header .brand img{display:block;width:140px;height:auto}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--yellow)}
 .live.on .dot{background:var(--ok);animation:pulse 1.8s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,210,122,.55)}70%,100%{box-shadow:0 0 0 9px rgba(47,210,122,0)}}
-header .btn{min-height:36px;padding:0 14px}
+header .btn{min-height:36px;padding:0 14px}.pwa-actions{display:flex;align-items:center;gap:8px}.pwa-actions .btn{min-height:36px;padding:0 12px;font-size:9px}
 main{width:min(calc(100% - 32px),1280px);margin:0 auto;padding:clamp(24px,4vw,48px) 0 80px}
 .ttl{margin:0 0 26px}.ttl h1{margin:10px 0 0;font-size:clamp(40px,6vw,76px);font-weight:800;letter-spacing:-.075em;line-height:.85;text-transform:uppercase;color:var(--beige)}.ttl h1 em{color:var(--red);font-style:normal}
 /* kpis */
@@ -139,6 +139,7 @@ tr.row td.c-name,tr.row td.c-act{grid-column:1/-1}tr.detail,tr.detail td{display
 .sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.sets .card{display:flex;flex-direction:column;align-items:flex-start;gap:14px}.sets .sub{font-size:13px;margin:0}
 @media(max-width:860px){
  header{gap:10px}.nav{order:5;width:100%;margin:0;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
+ .pwa-actions{order:4;width:100%;justify-content:flex-start;flex-wrap:wrap}.pwa-actions .btn{flex:1;min-width:130px}
  .sp{display:none}.live{margin-left:auto}.t2{min-width:560px}.t2 thead{display:table-header-group}
  .cobs{grid-template-columns:1fr}.per{width:100%}
 }
@@ -172,6 +173,10 @@ tr.row td.c-name,tr.row td.c-act{grid-column:1/-1}tr.detail,tr.detail td{display
     <a href="#visao" data-v="visao">Visão geral</a><a href="#matriculas" data-v="matriculas">Matrículas</a><a href="#cobrancas" data-v="cobrancas">Cobranças<span class="nb hide" id="nb"></span></a><a href="#unidades" data-v="unidades">Unidades</a><a href="#ajustes" data-v="ajustes">Ajustes</a>
   </nav>
   <span class="sp"></span>
+  <div class="pwa-actions" aria-label="Instalação e notificações">
+    <button class="btn" id="b-install-top" type="button">Instalar PWA</button>
+    <button class="btn" id="b-push-top" data-push-toggle type="button">Ativar notificações</button>
+  </div>
   <span class="live" id="live"><i class="dot"></i><span>Conectando…</span></span>
   <button class="btn" id="b-out">Sair</button>
 </header>
@@ -215,8 +220,8 @@ tr.row td.c-name,tr.row td.c-act{grid-column:1/-1}tr.detail,tr.detail td{display
   <section class="view hide" id="v-ajustes">
     <div class="ttl"><div><span class="kick">Preferências</span><h1>Seu <em>painel.</em></h1></div></div>
     <div class="sets">
-      <div class="card"><h2>Notificações no dispositivo</h2><p class="sub">Receba alertas de novos Pix e pagamentos confirmados, inclusive com o painel fechado. A ativação depende do backend de push e da permissão do navegador.</p><button class="btn pri" id="b-push" type="button">Ativar notificações</button><p class="sub" id="push-status" role="status" aria-live="polite">Verificando suporte do dispositivo…</p></div>
-      <div class="card"><h2>Instalar app</h2><p class="sub">Adicione o Painel Gaviões à tela inicial para abrir em uma janela própria.</p><button class="btn" id="b-install" type="button">Instalar app</button><p class="sub" id="install-status" role="status">A opção aparece quando o navegador permitir a instalação.</p></div>
+      <div class="card"><h2>Notificações no dispositivo</h2><p class="sub">Receba alertas de novos Pix e pagamentos confirmados, inclusive com o painel fechado. A ativação depende do backend de push e da permissão do navegador.</p><button class="btn pri" id="b-push" data-push-toggle type="button">Ativar notificações</button><p class="sub" id="push-status" role="status" aria-live="polite">Verificando suporte do dispositivo…</p></div>
+      <div class="card"><h2>Instalar app</h2><p class="sub">Adicione o Painel Gaviões à tela inicial para abrir em uma janela própria.</p><button class="btn" id="b-install" data-install-app type="button">Instalar PWA</button><p class="sub" id="install-status" role="status" aria-live="polite">Verificando instalação disponível…</p></div>
       <div class="card"><h2>Privacidade</h2><p class="sub">Por padrão o CPF aparece parcialmente. Mostre o número completo só quando precisar.</p><button class="btn" id="b-cpf">CPF: oculto</button></div>
       <div class="card"><h2>Dados</h2><p class="sub">Baixe uma planilha com todas as matrículas. Faça isso de tempos em tempos como cópia de segurança.</p><a class="btn" href="/api/admin/export.csv">Exportar CSV</a></div>
     </div>
@@ -255,63 +260,107 @@ const post=(p,b)=>api(p,{method:'POST',headers:{'content-type':'application/json
 
 const PUSH_KEY_URL='/api/admin/push/vapid-public-key';
 const PUSH_SUBSCRIPTIONS_URL='/api/admin/push/subscriptions';
-let swRegistration=null,installPrompt=null;
+let swRegistration=null,installPrompt=null,vapidPublicKey='',currentPushSubscription=null,appInstalled=false,installAccepted=false;
+const pushButtons=()=>[...document.querySelectorAll('[data-push-toggle]')];
+const installButtons=()=>[...document.querySelectorAll('[data-install-app]')];
 function pushStatus(message){const el=$('#push-status');if(el)el.textContent=message}
+function setInstallStatus(message){const el=$('#install-status');if(el)el.textContent=message}
+function isIOS(){return /iPhone|iPad|iPod/i.test(navigator.userAgent)||(/MacIntel/.test(navigator.platform)&&navigator.maxTouchPoints>1)}
+function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
 function base64UrlToBytes(value){
   const pad='='.repeat((4-value.length%4)%4),raw=atob((value+pad).replace(/-/g,'+').replace(/_/g,'/'));
   return Uint8Array.from(raw,c=>c.charCodeAt(0));
 }
+function updateInstallUi(){
+  const installed=isStandalone()||appInstalled;
+  installButtons().forEach(button=>{button.disabled=installed;button.textContent=installed?'App instalado':'Instalar PWA'});
+  if(installed)setInstallStatus('O PWA já está instalado. Feche esta aba e abra pelo ícone Gaviões na tela inicial para usar como app.');
+  else if(installAccepted)setInstallStatus('Instalação aceita. Aguarde a conclusão e depois abra pelo ícone Gaviões na tela inicial.');
+  else if(installPrompt)setInstallStatus('Instalação pronta. Toque em “Instalar PWA” e depois abra pelo ícone Gaviões.');
+  else if(isIOS())setInstallStatus('No iPhone/iPad: abra este painel no Safari, toque em Compartilhar e escolha “Adicionar à Tela de Início”. Depois abra pelo ícone Gaviões.');
+  else setInstallStatus('Se o botão não abrir a janela de instalação, use o menu do navegador (⋮/Compartilhar) e escolha “Instalar app” ou “Adicionar à tela inicial”. Depois abra pelo ícone Gaviões.');
+}
 async function updatePushButton(){
-  const button=$('#b-push');if(!button)return;
-  if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)||!window.isSecureContext){
-    button.disabled=true;pushStatus('Este navegador/origem não oferece push seguro. Use HTTPS e um navegador compatível.');return;
+  const buttons=pushButtons();if(!buttons.length)return;
+  const setButtons=(disabled,text)=>buttons.forEach(button=>{button.disabled=disabled;button.textContent=text});
+  if(!window.isSecureContext||!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){
+    setButtons(true,'Push indisponível');pushStatus('Notificações exigem HTTPS e um navegador compatível. Abra o domínio público seguro do painel.');return;
+  }
+  if(isIOS()&&!isStandalone()){
+    setButtons(true,'Instale para ativar');pushStatus('No iPhone/iPad, primeiro adicione o painel à Tela de Início pelo Safari e abra pelo ícone. Depois permita notificações.');return;
   }
   try{
     swRegistration=swRegistration||await navigator.serviceWorker.ready;
-    const sub=await swRegistration.pushManager.getSubscription();
-    if(Notification.permission==='denied'){button.disabled=true;pushStatus('Permissão bloqueada. Altere as permissões deste site nas configurações do navegador.');return}
-    button.disabled=false;button.textContent=sub?'Desativar notificações':'Ativar notificações';
-    if(sub){
-      try{await post(PUSH_SUBSCRIPTIONS_URL,{action:'subscribe',subscription:sub.toJSON()});pushStatus('Este dispositivo está inscrito e sincronizado com o backend.')}
-      catch{pushStatus('Push permitido no navegador, mas a inscrição ainda não foi sincronizada com o backend.')}
-    }else pushStatus('Notificações ainda não ativadas neste dispositivo.');
-  }catch{button.disabled=true;pushStatus('Não foi possível inicializar o serviço de notificações.');}
+    currentPushSubscription=await swRegistration.pushManager.getSubscription();
+    if(currentPushSubscription){
+      setButtons(false,'Desativar notificações');
+      try{await post(PUSH_SUBSCRIPTIONS_URL,{action:'subscribe',subscription:currentPushSubscription.toJSON()});pushStatus('Este dispositivo está inscrito e sincronizado com o servidor.');}
+      catch{pushStatus('Push está inscrito no navegador, mas a inscrição não sincronizou com o servidor.');}
+      return;
+    }
+    if(Notification.permission==='denied'){
+      setButtons(true,'Permissão bloqueada');pushStatus('Permissão bloqueada pelo navegador. Libere Notificações nas configurações deste site e recarregue o painel.');return;
+    }
+    const keyResult=await api(PUSH_KEY_URL);
+    vapidPublicKey=keyResult.publicKey||keyResult.vapidPublicKey||'';
+    if(!vapidPublicKey)throw new Error('O servidor não forneceu a chave VAPID pública.');
+    setButtons(false,'Ativar notificações');
+    pushStatus(Notification.permission==='granted'?'Permissão já concedida. Toque em “Ativar notificações” para registrar este dispositivo.':'Toque em “Ativar notificações” e aceite o aviso do navegador.');
+  }catch(error){
+    setButtons(true,'Push indisponível');
+    pushStatus(error.message||'Não foi possível inicializar as notificações. Confira as chaves VAPID no servidor.');
+  }
 }
-async function togglePush(){
-  const button=$('#b-push');button.disabled=true;
+async function togglePush(event){
+  const buttons=pushButtons();buttons.forEach(button=>button.disabled=true);
   try{
     if(!swRegistration)swRegistration=await navigator.serviceWorker.ready;
-    const current=await swRegistration.pushManager.getSubscription();
-    if(current){
-      await post(PUSH_SUBSCRIPTIONS_URL,{action:'unsubscribe',endpoint:current.endpoint});
-      await current.unsubscribe();
+    if(currentPushSubscription){
+      await post(PUSH_SUBSCRIPTIONS_URL,{action:'unsubscribe',endpoint:currentPushSubscription.endpoint});
+      await currentPushSubscription.unsubscribe();currentPushSubscription=null;
       pushStatus('Notificações desativadas neste dispositivo.');
     }else{
-      const permission=Notification.permission==='default'?await Notification.requestPermission():Notification.permission;
-      if(permission!=='granted')throw new Error(permission==='denied'?'Permissão negada pelo navegador.':'Permissão não concedida.');
-      const keyResult=await api(PUSH_KEY_URL);
-      const publicKey=keyResult.publicKey||keyResult.vapidPublicKey;
-      if(!publicKey)throw new Error('Backend não forneceu a chave pública VAPID.');
-      const subscription=await swRegistration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64UrlToBytes(publicKey)});
-      await post(PUSH_SUBSCRIPTIONS_URL,{action:'subscribe',subscription:subscription.toJSON()});
-      pushStatus('Pronto. Este dispositivo receberá os alertas enviados pelo backend.');
+      // Solicitar permissão antes de qualquer outra espera preserva o clique do usuário exigido pelo navegador.
+      const permissionPromise=Notification.permission==='default'?Notification.requestPermission():Promise.resolve(Notification.permission);
+      const permission=await permissionPromise;
+      if(permission!=='granted')throw new Error(permission==='denied'?'Permissão negada. Libere notificações nas configurações do navegador e recarregue.':'Permissão não concedida.');
+      if(!vapidPublicKey)throw new Error('Chave VAPID ausente. Confira VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY e VAPID_SUBJECT no Render.');
+      currentPushSubscription=await swRegistration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64UrlToBytes(vapidPublicKey)});
+      await post(PUSH_SUBSCRIPTIONS_URL,{action:'subscribe',subscription:currentPushSubscription.toJSON()});
+      pushStatus('Pronto. Este dispositivo receberá os alertas enviados pelo servidor, mesmo com o painel fechado.');
     }
   }catch(error){pushStatus(error.message||'Não foi possível atualizar a inscrição push.');}
   finally{await updatePushButton()}
 }
-$('#b-push').addEventListener('click',togglePush);
-addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;const b=$('#b-install');b.disabled=false;$('#install-status').textContent='Pronto para instalar neste dispositivo.'});
-addEventListener('appinstalled',()=>{installPrompt=null;$('#b-install').disabled=true;$('#install-status').textContent='Aplicativo instalado.'});
-$('#b-install').addEventListener('click',async()=>{
-  if(!installPrompt){$('#install-status').textContent='No iPhone/iPad: toque em Compartilhar e depois em “Adicionar à Tela de Início”. Em outros navegadores, use o menu “Instalar app” ou “Adicionar à tela inicial”.';return}
-  installPrompt.prompt();const result=await installPrompt.userChoice;installPrompt=null;$('#b-install').disabled=true;
-  $('#install-status').textContent=result.outcome==='accepted'?'Instalação iniciada.':'Instalação não concluída.';
-});
+pushButtons().forEach(button=>button.addEventListener('click',event=>{
+  if(event.currentTarget.id==='b-push-top')location.hash='ajustes';
+  togglePush(event);
+}));
+addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;updateInstallUi()});
+addEventListener('appinstalled',()=>{appInstalled=true;installPrompt=null;updateInstallUi()});
+async function installApp(event){
+  if(event.currentTarget.id==='b-install-top')location.hash='ajustes';
+  if(isStandalone()){updateInstallUi();return}
+  if(!installPrompt){updateInstallUi();return}
+  const prompt=installPrompt;installPrompt=null;
+  try{
+    await prompt.prompt();
+    const result=await prompt.userChoice;
+    installAccepted=result.outcome==='accepted';
+    setInstallStatus(installAccepted?'Instalação aceita. Aguarde a conclusão e depois abra pelo ícone Gaviões na tela inicial.':'Instalação não concluída. Você ainda pode usar o menu do navegador para instalar.');
+  }catch{setInstallStatus('Não foi possível abrir o instalador. Use o menu do navegador para instalar o app.');}
+  updateInstallUi();
+}
+installButtons().forEach(button=>button.addEventListener('click',installApp));
 async function initPWA(){
-  if(!('serviceWorker' in navigator)||!window.isSecureContext)return;
-  if(matchMedia('(display-mode: standalone)').matches||navigator.standalone===true){$('#install-status').textContent='Aplicativo instalado.';$('#b-install').disabled=true;}
-  try{swRegistration=await navigator.serviceWorker.register('/painel/sw.js',{scope:'/painel/'});await navigator.serviceWorker.ready;}
-  catch(error){console.error('[PWA] Falha ao registrar service worker:',error)}
+  updateInstallUi();
+  if(!window.isSecureContext){setInstallStatus('Para instalar o PWA, abra o painel pelo endereço HTTPS público.');return}
+  if(!('serviceWorker' in navigator)){setInstallStatus('Este navegador não oferece instalação PWA. Use Chrome/Edge ou Safari no iPhone/iPad.');return}
+  try{
+    swRegistration=await navigator.serviceWorker.register('/painel/sw.js',{scope:'/painel/'});
+    await navigator.serviceWorker.ready;
+    updateInstallUi();
+  }catch(error){setInstallStatus('Não foi possível registrar o PWA. Confira se o site está em HTTPS e recarregue.');console.error('[PWA] Falha ao registrar service worker:',error)}
 }
 initPWA();
 

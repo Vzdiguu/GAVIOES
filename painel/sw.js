@@ -1,5 +1,5 @@
 'use strict';
-const CACHE = 'gavioes-shell-v4';
+const CACHE = 'gavioes-shell-v5';
 const CORE = ['/painel/', '/painel/index.html', '/painel/manifest.webmanifest', '/painel/offline.html', '/painel/icons/app-192.png', '/painel/icons/app-512.png', '/painel/icons/app-maskable-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
