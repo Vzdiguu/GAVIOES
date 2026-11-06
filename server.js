@@ -150,7 +150,13 @@ async function handlePayment(req, res, pathname) {
   }
 
   if (req.method === 'POST' && pathname === '/api/payments/pix/webhook') {
-    const body = await readJson(req);
+    // A validação do painel pode enviar POST vazio ou sem JSON. Isso não é erro
+    // do webhook: respondemos 200 para a PushinPay e processamos JSON quando vier.
+    const rawBody = await readBody(req);
+    let body = {};
+    if (rawBody.trim()) {
+      try { body = JSON.parse(rawBody); } catch { body = { raw: rawBody }; }
+    }
     console.log('[PushinPay webhook]', JSON.stringify({ id: body.id, status: body.status }));
     return json(res, 200, { received: true });
   }
