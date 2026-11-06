@@ -49,14 +49,14 @@ header .brand-text{font-size:20px}
 .lg-foot{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);color:#756e79;font-size:11px}
 /* topo (igual ao checkout) */
 header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-height:78px;padding:10px clamp(16px,4vw,48px);background:rgba(13,12,15,.82);border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-header .brand img{display:block;width:140px;height:auto}
+header .brand{display:inline-flex;align-items:center;gap:9px;min-width:max-content;color:var(--beige);text-decoration:none}header .brand img{display:block;width:38px;height:38px;object-fit:cover;border:1px solid rgba(255,255,255,.12);border-radius:10px}header .brand-label{font-family:TekoLocal,Impact,sans-serif;font-size:17px;font-weight:600;letter-spacing:.12em;line-height:1}
 .mark{display:flex;flex-direction:column;line-height:1.1;color:#817a84;font-size:9px;font-weight:800;letter-spacing:.18em}.mark strong{color:#fff;font-size:11px;letter-spacing:.1em}
 .sp{flex:1}
 .live{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;color:#aaa4aa;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--yellow)}
 .live.on .dot{background:var(--ok);animation:pulse 1.8s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,210,122,.55)}70%,100%{box-shadow:0 0 0 9px rgba(47,210,122,0)}}
-header .btn{min-height:36px;padding:0 14px}.pwa-actions{display:flex;align-items:center;gap:8px}.pwa-actions .btn{min-height:36px;padding:0 12px;font-size:9px}
+header .btn{min-height:36px;padding:0 14px}.header-actions{display:flex;align-items:center;gap:8px}.icon-btn{position:relative;display:grid;place-items:center;width:40px;height:40px;padding:0;border:1px solid rgba(255,255,255,.18);border-radius:50%;background:#17151a;color:#b8b0ba;transition:.2s}.icon-btn:hover{border-color:#fff;color:#fff}.icon-btn:disabled{opacity:.45;cursor:not-allowed}.icon-btn.is-active{border-color:rgba(241,201,40,.55);background:rgba(241,201,40,.08);color:var(--yellow)}.icon-btn.is-active:after{content:"";position:absolute;top:2px;right:2px;width:8px;height:8px;border:2px solid var(--black);border-radius:50%;background:var(--ok)}.icon-btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 main{width:min(calc(100% - 32px),1280px);margin:0 auto;padding:clamp(24px,4vw,48px) 0 80px}
 .ttl{margin:0 0 26px}.ttl h1{margin:10px 0 0;font-size:clamp(40px,6vw,76px);font-weight:800;letter-spacing:-.075em;line-height:.85;text-transform:uppercase;color:var(--beige)}.ttl h1 em{color:var(--red);font-style:normal}
 /* kpis */
@@ -139,8 +139,7 @@ tr.row td.c-name,tr.row td.c-act{grid-column:1/-1}tr.detail,tr.detail td{display
 .sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.sets .card{display:flex;flex-direction:column;align-items:flex-start;gap:14px}.sets .sub{font-size:13px;margin:0}
 @media(max-width:860px){
  header{gap:10px}.nav{order:5;width:100%;margin:0;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
- .pwa-actions{order:4;width:100%;justify-content:flex-start;flex-wrap:wrap}.pwa-actions .btn{flex:1;min-width:130px}
- .sp{display:none}.live{margin-left:auto}.t2{min-width:560px}.t2 thead{display:table-header-group}
+ .header-actions{order:2;width:auto;margin-left:auto}.live{order:3;margin-left:0}header #b-out{order:4}.sp{display:none}.t2{min-width:560px}.t2 thead{display:table-header-group}
  .cobs{grid-template-columns:1fr}.per{width:100%}
 }
 </style>
@@ -168,16 +167,18 @@ tr.row td.c-name,tr.row td.c-act{grid-column:1/-1}tr.detail,tr.detail td{display
 </div>
 
 <header class="hide" id="top">
-  <a class="brand" href="/" aria-label="Painel Academia Gaviões"><b class="brand-text">GAVIÕES</b></a>
+  <a class="brand" href="/painel/" aria-label="Painel administrativo"><img src="/painel/icons/app-192.png" alt=""><span class="brand-label">ADMIN</span></a>
   <nav class="nav" id="nav" aria-label="Seções do painel">
     <a href="#visao" data-v="visao">Visão geral</a><a href="#matriculas" data-v="matriculas">Matrículas</a><a href="#cobrancas" data-v="cobrancas">Cobranças<span class="nb hide" id="nb"></span></a><a href="#unidades" data-v="unidades">Unidades</a><a href="#ajustes" data-v="ajustes">Ajustes</a>
   </nav>
   <span class="sp"></span>
-  <div class="pwa-actions" aria-label="Instalação e notificações">
-    <button class="btn" id="b-install-top" type="button">Instalar PWA</button>
-    <button class="btn" id="b-push-top" data-push-toggle type="button">Ativar notificações</button>
+  <div class="header-actions">
+    <button class="icon-btn" id="b-push-top" data-push-toggle type="button" aria-label="Ativar notificações" title="Ativar notificações" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+    </button>
   </div>
-  <span class="live" id="live"><i class="dot"></i><span>Conectando…</span></span>
+  <span class="sr-only" id="push-status" role="status" aria-live="polite">Verificando suporte das notificações…</span>
+  <span class="live" id="live" role="status" aria-live="polite"><i class="dot"></i><span id="live-label">Conectando…</span></span>
   <button class="btn" id="b-out">Sair</button>
 </header>
 
@@ -220,8 +221,6 @@ tr.row td.c-name,tr.row td.c-act{grid-column:1/-1}tr.detail,tr.detail td{display
   <section class="view hide" id="v-ajustes">
     <div class="ttl"><div><span class="kick">Preferências</span><h1>Seu <em>painel.</em></h1></div></div>
     <div class="sets">
-      <div class="card"><h2>Notificações no dispositivo</h2><p class="sub">Receba alertas de novos Pix e pagamentos confirmados, inclusive com o painel fechado. A ativação depende do backend de push e da permissão do navegador.</p><button class="btn pri" id="b-push" data-push-toggle type="button">Ativar notificações</button><p class="sub" id="push-status" role="status" aria-live="polite">Verificando suporte do dispositivo…</p></div>
-      <div class="card"><h2>Instalar app</h2><p class="sub">Adicione o Painel Gaviões à tela inicial para abrir em uma janela própria.</p><button class="btn" id="b-install" data-install-app type="button">Instalar PWA</button><p class="sub" id="install-status" role="status" aria-live="polite">Verificando instalação disponível…</p></div>
       <div class="card"><h2>Privacidade</h2><p class="sub">Por padrão o CPF aparece parcialmente. Mostre o número completo só quando precisar.</p><button class="btn" id="b-cpf">CPF: oculto</button></div>
       <div class="card"><h2>Dados</h2><p class="sub">Baixe uma planilha com todas as matrículas. Faça isso de tempos em tempos como cópia de segurança.</p><a class="btn" href="/api/admin/export.csv">Exportar CSV</a></div>
     </div>
@@ -232,7 +231,7 @@ tr.row td.c-name,tr.row td.c-act{grid-column:1/-1}tr.detail,tr.detail td{display
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
-const S={orders:[],f:{q:'',status:'all',unit:'',period:'all'},open:null,reveal:false,limit:100,flash:new Set(),es:null,first:true};
+const S={orders:[],f:{q:'',status:'all',unit:'',period:'all'},open:null,reveal:false,limit:100,flash:new Set(),es:null,first:true,reconnectTimer:null,reconnectHintTimer:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const brl=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const ts=iso=>iso?Date.parse(iso):0;
@@ -260,46 +259,34 @@ const post=(p,b)=>api(p,{method:'POST',headers:{'content-type':'application/json
 
 const PUSH_KEY_URL='/api/admin/push/vapid-public-key';
 const PUSH_SUBSCRIPTIONS_URL='/api/admin/push/subscriptions';
-let swRegistration=null,installPrompt=null,vapidPublicKey='',currentPushSubscription=null,appInstalled=false,installAccepted=false;
+let swRegistration=null,vapidPublicKey='',currentPushSubscription=null;
 const pushButtons=()=>[...document.querySelectorAll('[data-push-toggle]')];
-const installButtons=()=>[...document.querySelectorAll('[data-install-app]')];
 function pushStatus(message){const el=$('#push-status');if(el)el.textContent=message}
-function setInstallStatus(message){const el=$('#install-status');if(el)el.textContent=message}
 function isIOS(){return /iPhone|iPad|iPod/i.test(navigator.userAgent)||(/MacIntel/.test(navigator.platform)&&navigator.maxTouchPoints>1)}
 function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
 function base64UrlToBytes(value){
   const pad='='.repeat((4-value.length%4)%4),raw=atob((value+pad).replace(/-/g,'+').replace(/_/g,'/'));
   return Uint8Array.from(raw,c=>c.charCodeAt(0));
 }
-function updateInstallUi(){
-  const installed=isStandalone()||appInstalled;
-  installButtons().forEach(button=>{button.disabled=installed;button.textContent=installed?'App instalado':'Instalar PWA'});
-  if(installed)setInstallStatus('O PWA já está instalado. Feche esta aba e abra pelo ícone Gaviões na tela inicial para usar como app.');
-  else if(installAccepted)setInstallStatus('Instalação aceita. Aguarde a conclusão e depois abra pelo ícone Gaviões na tela inicial.');
-  else if(installPrompt)setInstallStatus('Instalação pronta. Toque em “Instalar PWA” e depois abra pelo ícone Gaviões.');
-  else if(isIOS())setInstallStatus('No iPhone/iPad: abra este painel no Safari, toque em Compartilhar e escolha “Adicionar à Tela de Início”. Depois abra pelo ícone Gaviões.');
-  else setInstallStatus('Se o botão não abrir a janela de instalação, use o menu do navegador (⋮/Compartilhar) e escolha “Instalar app” ou “Adicionar à tela inicial”. Depois abra pelo ícone Gaviões.');
-}
 async function updatePushButton(){
   const buttons=pushButtons();if(!buttons.length)return;
-  const setButtons=(disabled,text)=>buttons.forEach(button=>{button.disabled=disabled;button.textContent=text});
+  const setButtons=(disabled,label,active=false)=>buttons.forEach(button=>{button.disabled=disabled;button.setAttribute('aria-label',label);button.title=label;button.setAttribute('aria-pressed',String(active));button.classList.toggle('is-active',active)});
   if(!window.isSecureContext||!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){
-    setButtons(true,'Push indisponível');pushStatus('Notificações exigem HTTPS e um navegador compatível. Abra o domínio público seguro do painel.');return;
+    setButtons(true,'Notificações indisponíveis');pushStatus('Notificações exigem HTTPS e um navegador compatível. Abra o domínio público seguro do painel.');return;
   }
   if(isIOS()&&!isStandalone()){
-    setButtons(true,'Instale para ativar');pushStatus('No iPhone/iPad, primeiro adicione o painel à Tela de Início pelo Safari e abra pelo ícone. Depois permita notificações.');return;
+    setButtons(true,'No iPhone/iPad, abra o painel pela Tela de Início para ativar o sino.');pushStatus('No iPhone/iPad, abra o painel pela Tela de Início para ativar notificações.');return;
   }
   try{
     swRegistration=swRegistration||await navigator.serviceWorker.ready;
     currentPushSubscription=await swRegistration.pushManager.getSubscription();
     if(currentPushSubscription){
-      setButtons(false,'Desativar notificações');
-      try{await post(PUSH_SUBSCRIPTIONS_URL,{action:'subscribe',subscription:currentPushSubscription.toJSON()});pushStatus('Este dispositivo está inscrito e sincronizado com o servidor.');}
-      catch{pushStatus('Push está inscrito no navegador, mas a inscrição não sincronizou com o servidor.');}
+      try{await post(PUSH_SUBSCRIPTIONS_URL,{action:'subscribe',subscription:currentPushSubscription.toJSON()});setButtons(false,'Desativar notificações',true);pushStatus('Este dispositivo está inscrito e sincronizado com o servidor.');}
+      catch{setButtons(false,'Inscrição de notificações não sincronizada');pushStatus('Push está inscrito no navegador, mas a inscrição não sincronizou com o servidor.');}
       return;
     }
     if(Notification.permission==='denied'){
-      setButtons(true,'Permissão bloqueada');pushStatus('Permissão bloqueada pelo navegador. Libere Notificações nas configurações deste site e recarregue o painel.');return;
+      setButtons(true,'Permissão de notificações bloqueada');pushStatus('Permissão bloqueada pelo navegador. Libere Notificações nas configurações deste site e recarregue o painel.');return;
     }
     const keyResult=await api(PUSH_KEY_URL);
     vapidPublicKey=keyResult.publicKey||keyResult.vapidPublicKey||'';
@@ -307,7 +294,7 @@ async function updatePushButton(){
     setButtons(false,'Ativar notificações');
     pushStatus(Notification.permission==='granted'?'Permissão já concedida. Toque em “Ativar notificações” para registrar este dispositivo.':'Toque em “Ativar notificações” e aceite o aviso do navegador.');
   }catch(error){
-    setButtons(true,'Push indisponível');
+    setButtons(true,'Notificações indisponíveis');
     pushStatus(error.message||'Não foi possível inicializar as notificações. Confira as chaves VAPID no servidor.');
   }
 }
@@ -332,41 +319,21 @@ async function togglePush(event){
   }catch(error){pushStatus(error.message||'Não foi possível atualizar a inscrição push.');}
   finally{await updatePushButton()}
 }
-pushButtons().forEach(button=>button.addEventListener('click',event=>{
-  if(event.currentTarget.id==='b-push-top')location.hash='ajustes';
-  togglePush(event);
-}));
-addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;updateInstallUi()});
-addEventListener('appinstalled',()=>{appInstalled=true;installPrompt=null;updateInstallUi()});
-async function installApp(event){
-  if(event.currentTarget.id==='b-install-top')location.hash='ajustes';
-  if(isStandalone()){updateInstallUi();return}
-  if(!installPrompt){updateInstallUi();return}
-  const prompt=installPrompt;installPrompt=null;
-  try{
-    await prompt.prompt();
-    const result=await prompt.userChoice;
-    installAccepted=result.outcome==='accepted';
-    setInstallStatus(installAccepted?'Instalação aceita. Aguarde a conclusão e depois abra pelo ícone Gaviões na tela inicial.':'Instalação não concluída. Você ainda pode usar o menu do navegador para instalar.');
-  }catch{setInstallStatus('Não foi possível abrir o instalador. Use o menu do navegador para instalar o app.');}
-  updateInstallUi();
-}
-installButtons().forEach(button=>button.addEventListener('click',installApp));
+pushButtons().forEach(button=>button.addEventListener('click',togglePush));
 async function initPWA(){
-  updateInstallUi();
-  if(!window.isSecureContext){setInstallStatus('Para instalar o PWA, abra o painel pelo endereço HTTPS público.');return}
-  if(!('serviceWorker' in navigator)){setInstallStatus('Este navegador não oferece instalação PWA. Use Chrome/Edge ou Safari no iPhone/iPad.');return}
+  if(!window.isSecureContext||!('serviceWorker' in navigator))return;
   try{
     swRegistration=await navigator.serviceWorker.register('/painel/sw.js',{scope:'/painel/'});
     await navigator.serviceWorker.ready;
-    updateInstallUi();
-  }catch(error){setInstallStatus('Não foi possível registrar o PWA. Confira se o site está em HTTPS e recarregue.');console.error('[PWA] Falha ao registrar service worker:',error)}
+  }catch(error){console.error('[PWA] Falha ao registrar service worker:',error)}
 }
 initPWA();
 
 
 /* ---------- login ---------- */
 function showLogin(){
+  clearTimeout(S.reconnectTimer);S.reconnectTimer=null;
+  clearTimeout(S.reconnectHintTimer);S.reconnectHintTimer=null;
   if(S.es){S.es.close();S.es=null}
   $('#login').classList.remove('hide');$('#top').classList.add('hide');$('#app').classList.add('hide');$('#pw').focus();
 }
@@ -397,14 +364,31 @@ function upsert(o){
   render();
 }
 function bumpKpis(){const el=$('#kpis');el.classList.remove('bump');void el.offsetWidth;document.querySelectorAll('.kpi').forEach(k=>{k.classList.remove('bump');void k.offsetWidth;k.classList.add('bump')})}
-function setLive(on){const l=$('#live');l.classList.toggle('on',on);l.lastChild.textContent=on?'Ao vivo':'Reconectando…'}
+function setLive(on,message){const l=$('#live'),label=$('#live-label');l.classList.toggle('on',on);label.textContent=on?'Ao vivo':(message||'Conectando…')}
+function scheduleReconnect(source){
+  if(S.reconnectTimer)return;
+  S.reconnectTimer=setTimeout(async()=>{
+    S.reconnectTimer=null;
+    if(S.es!==source)return;
+    try{await api('/api/admin/orders');if(S.es===source&&source.readyState===2)connect()}
+    catch(error){if(error.message==='401')return;setLive(false,'Reconectando…');scheduleReconnect(source)}
+  },3000);
+}
 function connect(){
   if(S.es)S.es.close();
+  clearTimeout(S.reconnectTimer);S.reconnectTimer=null;
+  clearTimeout(S.reconnectHintTimer);S.reconnectHintTimer=null;
+  setLive(false,'Conectando…');
   const es=S.es=new EventSource('/api/admin/stream');
-  es.onopen=()=>{setLive(true);load()};
+  es.onopen=()=>{if(S.es!==es)return;clearTimeout(S.reconnectHintTimer);S.reconnectHintTimer=null;setLive(true);load().catch(()=>{})};
   es.addEventListener('order',e=>upsert(JSON.parse(e.data)));
   es.addEventListener('delete',e=>{const {id}=JSON.parse(e.data);S.orders=S.orders.filter(o=>o.id!==id);render()});
-  es.onerror=()=>{setLive(false);if(es.readyState===2){setTimeout(async()=>{try{await api('/api/admin/orders');connect()}catch{}},3000)}};
+  es.onerror=()=>{
+    if(S.es!==es)return;
+    clearTimeout(S.reconnectHintTimer);
+    S.reconnectHintTimer=setTimeout(()=>{if(S.es===es&&es.readyState!==1)setLive(false,'Reconectando…')},1800);
+    if(es.readyState===2)scheduleReconnect(es);
+  };
 }
 async function load(){const j=await api('/api/admin/orders');S.orders=j.orders;S.first=false;render()}
 async function start(){

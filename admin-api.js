@@ -272,8 +272,8 @@ async function sendPush(eventType, order) {
   if (!vapidPublicKey()) return;
   const result = await database.query('SELECT subscription FROM admin_push_subscriptions');
   const notification = eventType === 'payment_confirmed'
-    ? { eventId: `${order.id}:payment_confirmed`, type: 'payment_confirmed', title: 'Pagamento confirmado', body: 'Uma matrícula teve o pagamento confirmado.', url: '/painel/#matriculas', tag: `${order.id}:paid` }
-    : { eventId: `${order.id}:new_order`, type: 'new_order', title: 'Novo Pix gerado', body: 'Uma nova matrícula aguarda no painel.', url: '/painel/#matriculas', tag: `${order.id}:new` };
+    ? { eventId: `${order.id}:payment_confirmed`, type: 'payment_confirmed', title: 'Pagamento confirmado', body: 'Um pedido teve o pagamento confirmado.', url: '/painel/#matriculas', tag: `${order.id}:paid` }
+    : { eventId: `${order.id}:new_order`, type: 'new_order', title: 'Novo Pix gerado', body: 'Um novo pedido aguarda no painel.', url: '/painel/#matriculas', tag: `${order.id}:new` };
   const payload = JSON.stringify(notification);
   await Promise.allSettled(result.rows.map(async row => {
     const subscription = row.subscription;
