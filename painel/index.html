@@ -88,7 +88,7 @@ td{padding:14px;border-bottom:1px solid var(--line);vertical-align:middle;font-s
 tr.row{cursor:pointer;transition:background .2s}tr.row:hover td{background:#1f1c23}
 tr.flash td{animation:flash 2.8s}@keyframes flash{0%,35%{background:rgba(241,201,40,.2)}100%{background:transparent}}
 .badge{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
-.badge.paid{background:rgba(47,210,122,.14);color:var(--ok)}.badge.pending{background:rgba(241,201,40,.14);color:var(--yellow)}.badge.expired{background:rgba(227,6,19,.16);color:var(--bad)}
+.badge.paid{background:rgba(47,210,122,.14);color:var(--ok)}.badge.pending{background:rgba(241,201,40,.14);color:var(--yellow)}.badge.expired{background:rgba(227,6,19,.16);color:var(--bad)}.badge.failed{background:rgba(227,6,19,.16);color:var(--bad)}
 .badge.pending::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 1.4s infinite}@keyframes blink{50%{opacity:.25}}
 .name b{display:block;font-size:14px}.sub{color:#8f8892;font-size:11px}.stale{color:var(--yellow)}.tag{margin-left:8px;color:var(--ok);font-size:10px;font-weight:800}
 .mini{display:inline-flex;align-items:center;min-height:32px;padding:0 13px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:transparent;color:#fff;font-size:9px;font-weight:900;letter-spacing:.1em;text-decoration:none;text-transform:uppercase;transition:.2s}
@@ -241,7 +241,7 @@ const fone=d=>{d=String(d||'').replace(/^55(?=\d{10,11}$)/,'');return d.length==
 const cpfFull=d=>d.length===11?`${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`:d;
 const cpfShow=d=>S.reveal?cpfFull(d):(d.length===11?`***.${d.slice(3,6)}.${d.slice(6,9)}-**`:d);
 const first=n=>String(n||'').trim().split(/\s+/)[0]||'';
-const LABEL={paid:'Pago',pending:'Pendente',expired:'Expirado'};
+const LABEL={paid:'Pago',pending:'Pendente',expired:'Expirado',failed:'Falhou'};
 
 /* ---------- api ---------- */
 async function api(path,opt){

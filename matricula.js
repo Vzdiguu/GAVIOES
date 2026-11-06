@@ -10,7 +10,7 @@
   const queryUnit = params.get('unidade');
   const saved = (() => { try { return JSON.parse(sessionStorage.getItem('gavioesCheckoutState') || 'null') || {}; } catch (_) { return {}; } })();
   const unit = queryUnit ? {id:queryUnit,name:params.get('nome') || slugTitle(queryUnit),meta:'Unidade Gaviões 24 horas'} : (saved.unit || null);
-  const state = {step:queryUnit ? 1 : (saved.step || (unit ? 1 : 0)),unit,plan:queryUnit ? null : (saved.plan || null),planIndex:queryUnit ? 1 : (saved.planIndex ?? 1),person:queryUnit ? {name:'',email:'',phone:'',cpf:''} : (saved.person || {name:'',email:'',phone:'',cpf:''}),errors:{},payment:queryUnit ? 'pix' : (saved.payment || 'pix'),confirmed:queryUnit ? false : !!saved.confirmed};
+  const state = {step:queryUnit ? 1 : (saved.step || (unit ? 1 : 0)),unit,plan:queryUnit ? null : (saved.plan || null),planIndex:queryUnit ? 1 : (saved.planIndex ?? 1),person:queryUnit ? {name:'',email:'',phone:'',cpf:''} : (saved.person || {name:'',email:'',phone:'',cpf:''}),errors:{},payment:'pix',confirmed:queryUnit ? false : (!!saved.confirmed && saved.payment === 'pix')};
 
   const content = document.querySelector('#step-content');
   const heading = document.querySelector('#flow-title');
@@ -20,8 +20,11 @@
   const next = document.querySelector('#next-button');
   const toast = document.querySelector('#toast');
   let transitioning = false;
+  const makeRequestId = () => window.crypto?.randomUUID?.() || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)});
+  let chargeRequestId = makeRequestId();
   let pixCharge = null;
   let pixTimer = null;
+  let pixPaymentConfirmed = false;
   let justPaid = false;
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stopPix = () => { clearInterval(pixTimer); pixTimer = null; };
@@ -105,7 +108,7 @@
       <h3>${p.name}</h3><span class="plan-tag">${p.tag}</span><p>${p.desc}</p>
       <div class="plan-benefits-title">O que está incluído</div>
       <ul class="plan-features"><li>Acesso à unidade ${esc(state.unit.name)}</li><li>Treino no seu ritmo 24 horas</li><li>Sem taxa de matrícula</li></ul>
-      <span class="plan-price-label">Mensalidade recorrente</span>
+      <span class="plan-price-label">Valor mensal do plano</span>
       <span class="plan-price"><strong>${p.price}</strong><small>${p.period}</small></span>
       <span class="plan-note">${p.note}</span>
       <span class="plan-select-label">${on?'Plano selecionado ✓':'Escolher este plano'}</span>
@@ -246,13 +249,14 @@
   /* ---------- etapa 3: pagamento ---------- */
   function renderPayment(){
     heading.innerHTML='<h2>Revise e finalize.</h2><p>Confira suas escolhas e selecione a forma de pagamento para concluir o próximo passo.</p>';
-    content.innerHTML=`<div class="review-card"><div class="review-row"><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div class="review-row"><span>Plano</span><strong>${esc(state.plan?.name || 'Não selecionado')}</strong></div><div class="review-row"><span>Aluno</span><strong>${esc(state.person.name || 'Não informado')}</strong></div><div class="review-row"><span>Total mensal</span><strong>${state.plan?.price || 'R$ 0,00'}</strong></div></div><div class="payment-grid">${[['pix','Pix','Confirmação instantânea'],['card','Cartão','Crédito ou débito']].map(([v,t,s])=>`<label class="payment-option"><input type="radio" name="payment" value="${v}" ${state.payment===v?'checked':''}><span><strong>${t}</strong><small>${s}</small></span></label>`).join('')}</div><div class="payment-note">A forma de pagamento escolhida será considerada na confirmação da matrícula.</div><section class="contract-box" aria-label="Termo do contrato"><div class="term-cta">${termButton(state.plan)}</div></section><label class="checkout-check"><input id="review-ok" type="checkbox"><span>Confirmo que revisei meus dados, plano e unidade escolhida.</span></label><label class="checkout-check"><input id="contract-ok" type="checkbox"><span>Li e aceito o termo do contrato do plano ${esc(state.plan?.name||'selecionado')}.</span></label>`;
+    content.innerHTML=`<div class="review-card"><div class="review-row"><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div class="review-row"><span>Plano</span><strong>${esc(state.plan?.name || 'Não selecionado')}</strong></div><div class="review-row"><span>Aluno</span><strong>${esc(state.person.name || 'Não informado')}</strong></div><div class="review-row"><span>Valor desta cobrança</span><strong>${state.plan?.price || 'R$ 0,00'}</strong></div></div><div class="payment-grid">${[['pix','Pix','Pagamento avulso via PushinPay',false],['card','Cartão','Indisponível: integração não configurada',true]].map(([v,t,s,disabled])=>`<label class="payment-option ${disabled?'is-disabled':''}"><input type="radio" name="payment" value="${v}" ${state.payment===v?'checked':''} ${disabled?'disabled':''}><span><strong>${t}</strong><small>${s}</small></span></label>`).join('')}</div><div class="payment-note">O Pix desta tela é uma cobrança única. Este checkout não processa renovações mensais automáticas.</div><section class="contract-box" aria-label="Termo do contrato"><div class="term-cta">${termButton(state.plan)}</div></section><label class="checkout-check"><input id="review-ok" type="checkbox"><span>Confirmo que revisei meus dados, plano e unidade escolhida.</span></label><label class="checkout-check"><input id="contract-ok" type="checkbox"><span>Li e aceito o termo do contrato do plano ${esc(state.plan?.name||'selecionado')}.</span></label>`;
     content.querySelectorAll('input[name="payment"]').forEach(el=>el.addEventListener('change',()=>{state.payment=el.value;if(gsap)gsap.fromTo(el.closest('.payment-option'),{scale:.96},{scale:1,duration:.5,ease:'back.out(3)'})}));
   }
 
   const finishEnrollment = () => {
-    stopPix(); const viaPix = state.payment==='pix' && !!pixCharge; justPaid = viaPix;
-    state.confirmed=true; render(); transitioning=false;
+    stopPix(); const viaPix = state.payment==='pix' && pixPaymentConfirmed;
+    if(!viaPix){notify('A matrícula só pode ser concluída após a confirmação do Pix.');return}
+    justPaid = true; state.confirmed=true; render(); transitioning=false;
     { const card=document.querySelector('.checkout-card'); const y=card?card.getBoundingClientRect().top+window.scrollY-84:0; window.scrollTo({top:Math.max(0,y),behavior:reduceMotion?'auto':'smooth'}); }
     if(gsap)gsap.fromTo(content,{opacity:0},{opacity:1,duration:.4});
     if(!viaPix)notify('Matrícula preparada.');
@@ -265,7 +269,7 @@
     const setStatus=(text,cls)=>{statusText.textContent=text;status.className='pix-status '+(cls||'is-waiting')};
     let busy=false, paid=false;
     const onPaid=()=>{
-      if(paid)return; paid=true; stopPix();
+      if(paid)return; paid=true; pixPaymentConfirmed=true; stopPix();
       setStatus('Pagamento confirmado!','is-paid');
       if(navigator.vibrate)try{navigator.vibrate([60,40,120])}catch(_){}
       setTimeout(finishEnrollment, reduceMotion?100:500);
@@ -294,6 +298,7 @@
     document.querySelector('#pix-check-button')?.addEventListener('click',async e=>{
       if(e.currentTarget.dataset.renew){
         const btn=e.currentTarget; btn.disabled=true; setStatus('Gerando novo Pix…','is-waiting');
+        chargeRequestId=makeRequestId();
         try{showPixCharge(await createPixCharge())}catch(err){setStatus(err.message,'is-error');btn.disabled=false}
         return;
       }
@@ -304,8 +309,8 @@
     document.addEventListener('visibilitychange',function onVis(){ if(!pixTimer){document.removeEventListener('visibilitychange',onVis);return} if(!document.hidden)check(false) });
   };
   const createPixCharge = async () => {
-    const response=await fetch('/api/payments/pix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:state.plan.value,description:`Matrícula ${state.plan.name} - ${state.unit.name}`,unit:state.unit.id,customer:state.person})});
-    const result=await response.json(); if(!response.ok)throw new Error(result.error||'Não foi possível gerar o Pix.'); return result;
+    const response=await fetch('/api/payments/pix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestId:chargeRequestId,paymentMethod:'pix',planId:state.plan?.id,unitId:state.unit?.id,unitName:state.unit?.name,customer:state.person,reviewed:!!document.querySelector('#review-ok')?.checked,contractAccepted:!!document.querySelector('#contract-ok')?.checked})});
+    const result=await response.json(); if(!response.ok){const error=new Error(result.error||'Não foi possível gerar o Pix.');error.status=response.status;throw error} return result;
   };
 
 
@@ -376,7 +381,7 @@
   }
   function moveTo(step){
     if(transitioning||step<1||step>3)return;
-    stopPix(); pixCharge=null;
+    stopPix(); pixCharge=null; pixPaymentConfirmed=false; chargeRequestId=makeRequestId();
     transitioning=true;
     const dir=step>state.step?1:-1;
     const finish=()=>{state.step=step;render();transitioning=false;window.scrollTo({top:0,behavior:'smooth'});animateContent(dir)};
@@ -387,14 +392,13 @@
     if(!valid())return;
     if(state.step<3)moveTo(state.step+1);
     else{
-      if(state.payment==='pix' && !pixCharge){
+      if(state.payment!=='pix'){notify('No momento, o checkout aceita somente Pix.');return}
+      if(!pixCharge){
         transitioning=true; next.disabled=true; next.textContent='Gerando Pix…';
-        createPixCharge().then(showPixCharge).catch(error=>{notify(error.message);next.disabled=false;next.textContent='Finalizar matrícula';}).finally(()=>{transitioning=false;});
+        createPixCharge().then(showPixCharge).catch(error=>{notify(error.message);if(error.status===502)chargeRequestId=makeRequestId();next.disabled=false;next.textContent='Finalizar matrícula';}).finally(()=>{transitioning=false;});
         return;
       }
-      transitioning=true;
-      const done=finishEnrollment;
-      if(gsap)gsap.to(content,{y:-18,opacity:0,duration:.25,ease:'power2.in',onComplete:()=>{gsap.set(content,{y:0});done()}});else done();
+      notify('Aguardando a confirmação do pagamento Pix.');
     }
   });
   back.addEventListener('click',()=>{if(state.step>1)moveTo(state.step-1)});

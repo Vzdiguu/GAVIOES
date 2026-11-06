@@ -1,59 +1,46 @@
-# Contrato de backend — Web Push do Painel Gaviões
+# Backend de produção do Painel Gaviões
 
-O frontend é um PWA estático, mas notificações mesmo com o painel fechado dependem de um backend real que receba eventos de pedidos e envie Web Push. O backend deve manter a inscrição no escopo do usuário administrador autenticado. Não armazene dados de aluno dentro do payload da notificação.
+O painel é servido em `/painel/` pelo mesmo servidor Node do site. A página pode ser carregada publicamente, mas as APIs administrativas exigem uma sessão autenticada. O serviço usa PostgreSQL persistente, fornecido pelo Render por `DATABASE_URL`.
 
-## Rotas same-origin esperadas
+## APIs administrativas
 
-Todas as rotas abaixo devem exigir a sessão de administrador existente (`credentials: same-origin`). A resposta JSON deve definir `Content-Type: application/json` e evitar cache (`Cache-Control: no-store`).
+- `POST /api/admin/login` recebe `{ "password": "..." }`, compara com `ADMIN_PASSWORD` em tempo constante, limita tentativas e cria uma sessão aleatória persistida no PostgreSQL.
+- `POST /api/admin/logout` revoga a sessão e limpa o cookie.
+- `GET /api/admin/orders` lista matrículas, sem pedidos ainda em estado intermediário de criação.
+- `GET /api/admin/stream` envia eventos SSE para usuários autenticados.
+- `GET /api/admin/export.csv` exporta CSV com autenticação e proteção contra fórmulas em planilhas.
+- `POST /api/admin/orders/:id` atualiza contato/observação; `POST /api/admin/orders/:id/delete` exclui pedidos não pagos. O painel não pode apagar pedidos pagos.
+- `GET /api/admin/push/vapid-public-key` entrega a chave pública VAPID somente após login.
+- `POST /api/admin/push/subscriptions` cria ou remove inscrições Push autenticadas.
 
-- `GET /api/admin/push/vapid-public-key` → `{ "publicKey": "<VAPID public key base64url>" }`. A chave pública pode ser exposta somente a administradores autenticados; a privada nunca pode ir ao frontend.
-- `POST /api/admin/push/subscriptions` com `{ "action": "subscribe", "subscription": { "endpoint": "https://…", "keys": { "p256dh": "…", "auth": "…" } } }` → valida e persiste a inscrição associada ao administrador atual. Torne a operação idempotente por endpoint.
-- `POST /api/admin/push/subscriptions` com `{ "action": "unsubscribe", "endpoint": "https://…" }` → remove apenas a inscrição pertencente ao administrador atual.
+O cookie de sessão é `HttpOnly`, `SameSite=Lax`, `Secure` em HTTPS, expira em oito horas e é validado contra o banco. Solicitações de alteração verificam a origem same-origin. `ADMIN_PASSWORD` e a chave privada VAPID não são enviados ao navegador.
 
-Ao criar uma inscrição, valide esquema e tamanho, aceite somente HTTPS em `endpoint`, aplique limites por usuário/IP e nunca considere o endpoint informado pelo cliente confiável para SSRF: as chamadas de envio devem usar uma biblioteca Web Push mantida, validar resposta e não aceitar endpoints arbitrários em rotas de proxy.
+## Web Push
 
-## Eventos que devem gerar push
+As inscrições são persistidas na tabela `admin_push_subscriptions`. Push é enviado pelo servidor quando um novo Pix é criado e quando o status passa pela primeira vez para `paid`. O payload contém apenas um aviso genérico, sem nome, CPF, e-mail, telefone ou valor. Endpoints que respondem `404` ou `410` são removidos. O servidor aceita somente domínios conhecidos de push por HTTPS para reduzir risco de SSRF.
 
-Envie push no servidor, não no navegador:
+Configure estas variáveis no Render para habilitar push: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_SUBJECT` (por exemplo, `mailto:admin@seudominio.com`). As notificações exigem HTTPS público, permissão concedida pelo usuário e suporte do navegador/SO.
 
-1. Quando um novo Pix/pedido for criado: tipo `new_order`.
-2. Quando um pedido mudar pela primeira vez para `paid`: tipo `payment_confirmed`.
+## Pedidos e pagamentos Pix
 
-Use o mesmo ponto de origem onde o backend grava/broadcasta os eventos. Não envie ao recarregar o histórico, em reconciliações sem mudança ou em atualizações de observação/contato. Faça deduplicação/idempotência por ID do evento/pedido + transição de estado. Se o provedor responder `404` ou `410`, exclua a inscrição expirada.
+`POST /api/payments/pix` só aceita Pix, exige aceite da revisão e do termo, valida CPF/contato e calcula o preço usando o ID do plano no servidor. Os pedidos e inscrições push ficam no PostgreSQL. O navegador não escolhe o valor da cobrança.
 
-Payload recomendado, deliberadamente sem CPF, telefone, e-mail, nome completo ou dados de pagamento:
+`POST /api/payments/pix/webhook` trata o corpo como aviso não confiável. Para atualizar o status, o servidor consulta a transação diretamente na PushinPay e confere ID/valor. `GET /api/payments/pix/:id` também consulta o provedor, com intervalo mínimo entre chamadas automáticas para evitar excesso de requisições.
 
-```json
-{
-  "eventId": "order-id:event-type",
-  "type": "new_order",
-  "title": "Novo Pix gerado",
-  "body": "Uma nova matrícula aguarda no painel.",
-  "url": "/painel/#matriculas",
-  "tag": "order-id:new_order"
-}
-```
+O checkout implementado gera uma cobrança Pix avulsa; cartão está desativado. O código atual não executa renovações mensais automáticas. Os textos comerciais/contratuais que falam em cobrança recorrente precisam ser alinhados com a operação da academia antes de anunciar ou considerar a recorrência pronta para produção.
 
-Para pagamento confirmado, use título `Pagamento confirmado`, texto genérico sem dados pessoais e URL `/painel/#matriculas`. O service worker só abre URLs da mesma origem.
+## Variáveis do Render
 
-## Variáveis de ambiente
+- `DATABASE_URL`: URL de conexão do PostgreSQL Render.
+- `ADMIN_PASSWORD`: senha forte do painel.
+- `PUSHINPAY_TOKEN`: token Bearer da API PushinPay.
+- `PUSHINPAY_API_URL`: opcional; padrão `https://api.pushinpay.com.br`. `https://app.pushinpay.com.br` é o portal de acesso, não o host da API.
+- `PUBLIC_BASE_URL`: domínio público HTTPS do site usado para compor o endpoint do webhook.
+- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`: credenciais Web Push.
+- `PORT`: fornecido pela hospedagem.
 
-O servidor existente já usa `PUSHINPAY_TOKEN` (obrigatória para pagamentos reais), `PUBLIC_BASE_URL` (URL HTTPS pública para webhooks), `PUSHINPAY_API_URL` (opcional; padrão `https://api.pushinpay.com.br`) e `PORT` (opcional; padrão 3000).
+O arquivo `admin-schema.sql` cria as tabelas e índices de forma idempotente na inicialização. A conta de banco deve permitir criar tabelas e índices. Não versione `.env` nem credenciais.
 
-Quando você adicionar o backend administrativo e de push, configure `ADMIN_PASSWORD` para o acesso ao painel e estas variáveis para Web Push: `VAPID_PUBLIC_KEY` (a API autenticada devolve o valor), `VAPID_PRIVATE_KEY` (segredo apenas do servidor) e `VAPID_SUBJECT` (contato VAPID válido, como `mailto:ops@seudominio.com`). `ADMIN_SECRET` é opcional se usar o modelo de assinatura de sessão do `admin.js` que veio no RAR. O repositório atual ainda não consome essas novas variáveis porque as rotas administrativas/push não foram implementadas. As inscrições precisam ser guardadas em banco ou armazenamento persistente, não dependem de uma variável de ambiente específica.
+## Escopo do service worker
 
-## Requisitos operacionais e de segurança
-
-- Gere o par VAPID no backend e configure contato VAPID válido. Guarde a chave privada em secret manager/variável de ambiente; não a versione nem a coloque em `pwa-config.js`, HTML ou logs.
-- Persista inscrições em armazenamento durável. Não dependa apenas da memória do processo ou do disco efêmero do container.
-- Associe cada inscrição ao administrador autenticado e remova-a ao desativar; proteja POST contra CSRF conforme a política de sessão do seu backend.
-- A permissão do navegador só pode ser solicitada após clique do usuário, como implementado. Push requer origem HTTPS pública (localhost é exceção de desenvolvimento) e suporte do navegador/SO.
-- O service worker está em `/painel/sw.js` com escopo `/painel/`; mantenha-o acessível sem autenticação, MIME `application/javascript`, TLS e cabeçalho de cache que permita atualizar a versão.
-- Não envie notificações com CPF, telefone, e-mail, valor, nome ou outras informações pessoais. O usuário verá notificações no ecrã bloqueado.
-- A inscrição push do browser não é prova de autenticação. As rotas de gestão e a operação de envio devem estar protegidas no servidor.
-
-O frontend já usa esses endpoints. Se o backend tiver rotas diferentes, altere `PUSH_KEY_URL` e `PUSH_SUBSCRIPTIONS_URL` no JavaScript do `index.html`.
-
-## Publicação no repositório GAVIOES
-
-O frontend foi instalado sob `/painel/`; o service worker tem escopo restrito a esse caminho. As APIs de administração continuam same-origin em `/api/admin/...`, fora do service worker. O servidor Node atual precisa devolver `application/manifest+json` para `.webmanifest` e ser servido sob HTTPS no domínio final. Este repositório ainda não contém as rotas de login administrativo ou de gestão/envio de inscrições push.
+O service worker permanece em `/painel/sw.js`, com escopo `/painel/`. O manifesto, os ícones e a página offline são públicos e servidos por HTTPS. Arquivos internos de servidor, dependências e ambiente não são expostos como arquivos estáticos.

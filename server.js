@@ -1,20 +1,16 @@
 const http = require('node:http');
-const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { URL } = require('node:url');
 const { request: httpsRequest } = require('node:https');
+const database = require('./database');
+const adminApi = require('./admin-api');
+const paymentApi = require('./payment-api');
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 3000);
-const PUSHINPAY_API = process.env.PUSHINPAY_API_URL || 'https://api.pushinpay.com.br';
-const PUSHINPAY_TOKEN = process.env.PUSHINPAY_TOKEN;
-const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || '';
 const MAX_BODY = 100_000;
 
-if (!PUSHINPAY_TOKEN) {
-  console.warn('[PushinPay] Defina PUSHINPAY_TOKEN antes de usar pagamentos reais.');
-}
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -61,108 +57,13 @@ function readBody(req) {
   });
 }
 
-async function readJson(req) {
-  const raw = await readBody(req);
-  try {
-    return JSON.parse(raw || '{}');
-  } catch {
-    throw Object.assign(new Error('JSON inválido.'), { status: 400 });
-  }
-}
-
-function pushinpay(pathname, options = {}) {
-  if (!PUSHINPAY_TOKEN) {
-    throw Object.assign(new Error('PUSHINPAY_TOKEN não configurado no backend.'), { status: 503 });
-  }
-
-  return new Promise((resolve, reject) => {
-    const target = new URL(pathname, PUSHINPAY_API);
-    const body = options.body || '';
-    const request = httpsRequest(target, {
-      method: options.method || 'GET',
-      headers: {
-        Authorization: `Bearer ${PUSHINPAY_TOKEN}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        ...(body ? { 'Content-Length': Buffer.byteLength(body) } : {}),
-        ...(options.headers || {}),
-      },
-      timeout: 15_000,
-    }, response => {
-      let text = '';
-      response.setEncoding('utf8');
-      response.on('data', chunk => { text += chunk; });
-      response.on('end', () => {
-        let data;
-        try { data = JSON.parse(text); } catch { data = { raw: text }; }
-        if (response.statusCode < 200 || response.statusCode >= 300) {
-          reject(Object.assign(new Error(`PushinPay ${response.statusCode}`), {
-            status: response.statusCode,
-            data,
-          }));
-          return;
-        }
-        resolve(data);
-      });
-    });
-    request.on('timeout', () => request.destroy(new Error('Tempo esgotado na PushinPay.')));
-    request.on('error', reject);
-    if (body) request.write(body);
-    request.end();
-  });
-}
-
-async function handlePayment(req, res, pathname) {
-  if (req.method === 'POST' && pathname === '/api/payments/pix') {
-    const body = await readJson(req);
-    const cents = Math.round(Number(body.value) * 100);
-    if (!Number.isInteger(cents) || cents < 50) {
-      return json(res, 422, { error: 'Valor Pix inválido.' });
-    }
-    const charge = await pushinpay('/api/pix/cashIn', {
-      method: 'POST',
-      body: JSON.stringify({
-        value: cents,
-        description: String(body.description || 'Matrícula Academia Gaviões').slice(0, 255),
-        webhook_url: PUBLIC_BASE_URL ? `${PUBLIC_BASE_URL.replace(/\/$/, '')}/api/payments/pix/webhook` : null,
-        split_rules: [],
-      }),
-    });
-    return json(res, 200, {
-      id: charge.id,
-      status: charge.status,
-      qr_code: charge.qr_code,
-      qr_code_base64: charge.qr_code_base64,
-    });
-  }
-
-  // A PushinPay envia eventos por POST, mas o painel pode validar a URL por GET.
-  if (req.method === 'GET' && pathname === '/api/payments/pix/webhook') {
-    return json(res, 200, { ok: true, endpoint: 'pushinpay-webhook' });
-  }
-
-  if (req.method === 'GET' && pathname.startsWith('/api/payments/pix/')) {
-    const id = pathname.split('/').pop();
-    if (!/^[a-f0-9-]{20,}$/i.test(id)) {
-      return json(res, 400, { error: 'ID de cobrança inválido.' });
-    }
-    const transaction = await pushinpay(`/api/transactions/${encodeURIComponent(id)}`);
-    return json(res, 200, { id: transaction.id, status: transaction.status });
-  }
-
-  if (req.method === 'POST' && pathname === '/api/payments/pix/webhook') {
-    // A validação do painel pode enviar POST vazio ou sem JSON. Isso não é erro
-    // do webhook: respondemos 200 para a PushinPay e processamos JSON quando vier.
-    const rawBody = await readBody(req);
-    let body = {};
-    if (rawBody.trim()) {
-      try { body = JSON.parse(rawBody); } catch { body = { raw: rawBody }; }
-    }
-    console.log('[PushinPay webhook]', JSON.stringify({ id: body.id, status: body.status }));
-    return json(res, 200, { received: true });
-  }
-
-  return false;
+function sameOrigin(req) {
+  const origin = req.headers.origin;
+  if (!origin) return req.headers['sec-fetch-site'] !== 'cross-site';
+  const forwarded = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+  const protocol = forwarded || (req.socket.encrypted ? 'https' : 'http');
+  try { return new URL(origin).origin.toLowerCase() === `${protocol}://${String(req.headers.host || '').toLowerCase()}`; }
+  catch { return false; }
 }
 
 function proxyLocations(req, res) {
@@ -194,21 +95,39 @@ function proxyLocations(req, res) {
         });
       });
       request.on('timeout', () => request.destroy(new Error('Tempo esgotado na busca de unidades.')));
-      request.on('error', error => {
-        json(res, 502, { error: `Location proxy failed: ${error.message}` });
+      request.on('error', () => {
+        json(res, 502, { error: 'Falha ao consultar unidades.' });
         resolve();
       });
       request.write(body);
       request.end();
     } catch (error) {
-      json(res, error.status || 502, { error: error.message });
+      json(res, error.status || 502, { error: error.status ? error.message : 'Falha ao consultar unidades.' });
       resolve();
     }
   });
 }
 
+const PRIVATE_STATIC_FILES = new Set([
+  'server.js', 'database.js', 'admin-api.js', 'payment-api.js', 'payment-rules.js',
+  'package.json', 'package-lock.json', 'agenda-capture.json',
+]);
+
+function isPrivateStaticPath(pathname) {
+  let decoded;
+  try { decoded = decodeURIComponent(pathname); } catch { return true; }
+  const parts = decoded.split('/').filter(Boolean).map(part => part.toLowerCase());
+  if (parts.some(part => part === '.git' || part === 'node_modules' || part === 'backend' || part === 'test' || part === 'tests')) return true;
+  if (parts.some(part => part.startsWith('.env') || (part.startsWith('.') && part !== '.well-known'))) return true;
+  const basename = parts.at(-1) || '';
+  if (PRIVATE_STATIC_FILES.has(basename)) return true;
+  if (/\.(sql|lock|log|map)$/i.test(basename)) return true;
+  return false;
+}
+
 function safeFilePath(pathname) {
-  const decoded = decodeURIComponent(pathname);
+  let decoded;
+  try { decoded = decodeURIComponent(pathname); } catch { return null; }
   const relative = decoded === '/' ? 'index.html' : decoded.replace(/^\/+/, '');
   const candidate = path.resolve(ROOT, relative);
   if (candidate !== ROOT && !candidate.startsWith(`${ROOT}${path.sep}`)) return null;
@@ -216,6 +135,7 @@ function safeFilePath(pathname) {
 }
 
 function resolveStaticFile(pathname) {
+  if (isPrivateStaticPath(pathname)) return null;
   let candidate = safeFilePath(pathname);
   if (!candidate) return null;
   if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
@@ -263,24 +183,55 @@ const server = http.createServer(async (req, res) => {
       return res.end();
     }
     if (req.method === 'POST' && pathname === '/api/capture-agenda') {
+      if (process.env.ENABLE_AGENDA_CAPTURE !== 'true' || !sameOrigin(req)) return json(res, 404, { error: 'Endpoint não encontrado.' });
       const body = await readBody(req);
       fs.writeFileSync(path.join(ROOT, 'agenda-capture.json'), body);
       return res.writeHead(204).end();
     }
-    if (req.method === 'POST' && pathname === '/api/locations') return proxyLocations(req, res);
+    if (req.method === 'POST' && pathname === '/api/locations') {
+      if (!sameOrigin(req)) return json(res, 403, { error: 'Origem da solicitação não permitida.' });
+      return proxyLocations(req, res);
+    }
+    if (pathname === '/api/admin' || pathname.startsWith('/api/admin/')) {
+      await adminApi.handle(req, res, pathname);
+      return;
+    }
     if (pathname.startsWith('/api/')) {
-      const handled = await handlePayment(req, res, pathname);
+      const handled = await paymentApi.handlePayment(req, res, pathname);
       if (handled !== false) return handled;
       return json(res, 404, { error: 'Endpoint não encontrado.' });
     }
     if (req.method !== 'GET' && req.method !== 'HEAD') return json(res, 405, { error: 'Método não permitido.' });
     return serveStatic(req, res, pathname);
   } catch (error) {
-    console.error(error);
-    return json(res, error.status || 500, { error: error.message, data: error.data || null });
+    console.error('[HTTP]', error.code || error.name || 'erro');
+    return json(res, error.status || 500, { error: error.status ? error.message : 'Erro interno do servidor.' });
   }
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Site + Pix Gaviões em http://0.0.0.0:${PORT}`);
+async function startServer() {
+  if (process.env.DATABASE_URL) {
+    await database.initialize();
+    console.log('[Database] PostgreSQL conectado e esquema administrativo aplicado.');
+  } else {
+    console.warn('[Database] DATABASE_URL ausente; painel e pagamentos permanecem indisponíveis.');
+  }
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Site Gaviões em 0.0.0.0:${PORT}`);
+  });
+}
+
+startServer().catch(error => {
+  console.error('[Startup] Falha ao conectar/inicializar PostgreSQL:', error.code || error.name || 'erro');
+  process.exit(1);
 });
+
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.on(signal, () => {
+    adminApi.closeStreams();
+    server.close(async () => {
+      await database.close().catch(() => {});
+      process.exit(0);
+    });
+  });
+}
