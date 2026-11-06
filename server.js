@@ -231,11 +231,20 @@ function resolveStaticFile(pathname) {
 function serveStatic(req, res, pathname) {
   const filename = resolveStaticFile(pathname) || path.join(ROOT, '404.html');
   if (!fs.existsSync(filename)) return json(res, 404, { error: 'Página não encontrada.' });
-  const body = fs.readFileSync(filename);
+  const ext = path.extname(filename).toLowerCase();
+  let body = fs.readFileSync(filename);
+  if (ext === '.html') {
+    let html = body.toString('utf8');
+    if (!html.includes('site-input-no-auto-zoom')) {
+      const style = '<style id="site-input-no-auto-zoom">input,select,textarea{font-size:16px!important}</style>';
+      html = /<\/head>/i.test(html) ? html.replace(/<\/head>/i, `${style}\n</head>`) : `${style}\n${html}`;
+      body = Buffer.from(html, 'utf8');
+    }
+  }
   const status = filename.endsWith('404.html') && !resolveStaticFile(pathname) ? 404 : 200;
-  const noCache = pathname === '/painel' || pathname.startsWith('/painel/');
+  const noCache = ext === '.html' || pathname === '/painel' || pathname.startsWith('/painel/');
   res.writeHead(status, {
-    'content-type': MIME_TYPES[path.extname(filename).toLowerCase()] || 'application/octet-stream',
+    'content-type': MIME_TYPES[ext] || 'application/octet-stream',
     'content-length': body.length,
     ...(noCache ? { 'cache-control': 'no-cache, max-age=0, must-revalidate' } : {}),
   });
