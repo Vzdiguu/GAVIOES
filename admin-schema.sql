@@ -21,11 +21,15 @@ CREATE TABLE IF NOT EXISTS admin_orders (
   terms_version TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   paid_at TIMESTAMPTZ,
+  confirmation_email_sent_at TIMESTAMPTZ,
+  confirmation_email_sending_at TIMESTAMPTZ,
   last_provider_check_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 ALTER TABLE admin_orders ADD COLUMN IF NOT EXISTS last_provider_check_at TIMESTAMPTZ;
+ALTER TABLE admin_orders ADD COLUMN IF NOT EXISTS confirmation_email_sent_at TIMESTAMPTZ;
+ALTER TABLE admin_orders ADD COLUMN IF NOT EXISTS confirmation_email_sending_at TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS admin_orders_created_at_idx ON admin_orders (created_at DESC);
 CREATE INDEX IF NOT EXISTS admin_orders_status_created_at_idx ON admin_orders (status, created_at DESC);
 CREATE INDEX IF NOT EXISTS admin_orders_unit_created_at_idx ON admin_orders (unit_name, created_at DESC);

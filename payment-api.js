@@ -3,6 +3,7 @@ const { request: httpsRequest } = require('node:https');
 const database = require('./database');
 const adminApi = require('./admin-api');
 const { getPlanCatalog, digits, isValidCpf, normalizeProviderStatus } = require('./payment-rules');
+const { configured: brevoConfigured, sendPaymentConfirmation } = require('./brevo-email');
 
 const PUSHINPAY_API = (process.env.PUSHINPAY_API_URL || 'https://api.pushinpay.com.br').replace(/\/+$/, '');
 const PUSHINPAY_TOKEN = process.env.PUSHINPAY_TOKEN || '';
@@ -260,7 +261,10 @@ async function createPix(req, res) {
       WHERE id = $5
     `, [chargeId, status, qrCode, qrBase64, orderId]);
     adminApi.publishOrder(orderId, 'new_order').catch(error => console.warn('[Admin order] evento não enviado:', error.code || error.name || 'erro'));
-    if (status === 'paid') adminApi.publishOrder(orderId, 'payment_confirmed').catch(() => {});
+    if (status === 'paid') {
+      adminApi.publishOrder(orderId, 'payment_confirmed').catch(() => {});
+      sendConfirmationEmailIfNeeded(orderId).catch(() => {});
+    }
     return json(res, 200, {
       id: chargeId,
       status: charge.status || 'created',
@@ -290,6 +294,36 @@ async function verifyProviderCharge(chargeId, order) {
   return transaction;
 }
 
+async function sendConfirmationEmailIfNeeded(orderId) {
+  if (!brevoConfigured()) {
+    console.warn('[Brevo] confirmação não enviada: defina BREVO_API_KEY e BREVO_SENDER_EMAIL.');
+    return;
+  }
+  const claimed = await database.query(`
+    UPDATE admin_orders
+    SET confirmation_email_sending_at = NOW()
+    WHERE id = $1
+      AND status = 'paid'
+      AND confirmation_email_sent_at IS NULL
+      AND (confirmation_email_sending_at IS NULL OR confirmation_email_sending_at < NOW() - INTERVAL '15 minutes')
+    RETURNING *
+  `, [orderId]);
+  if (!claimed.rowCount) return;
+  const order = claimed.rows[0];
+  try {
+    const result = await sendPaymentConfirmation(order);
+    await database.query(`
+      UPDATE admin_orders
+      SET confirmation_email_sent_at = NOW(), confirmation_email_sending_at = NULL, updated_at = NOW()
+      WHERE id = $1
+    `, [order.id]);
+    console.log('[Brevo] confirmação enviada:', order.email, result.messageId || 'ok');
+  } catch (error) {
+    await database.query('UPDATE admin_orders SET confirmation_email_sending_at = NULL WHERE id = $1', [order.id]).catch(() => {});
+    console.warn('[Brevo] confirmação não enviada:', error.code || error.message || 'erro');
+  }
+}
+
 async function checkPix(req, res, chargeId) {
   if (!/^[A-Za-z0-9_-]{8,128}$/.test(chargeId)) return json(res, 400, { error: 'ID de cobrança inválido.' });
   if (!database.isReady()) return json(res, 503, { error: 'Banco PostgreSQL não está conectado.' });
@@ -312,6 +346,7 @@ async function checkPix(req, res, chargeId) {
   try {
     const transaction = await verifyProviderCharge(chargeId, order);
     const updated = await adminApi.transitionChargeOrder(chargeId, transaction.status);
+    if (updated?.status === 'paid') sendConfirmationEmailIfNeeded(updated.id).catch(() => {});
     return json(res, 200, { id: chargeId, status: updated?.status || normalizeProviderStatus(transaction.status) || 'pending' });
   } catch (error) {
     const status = Number(error.status) === 429 ? 503 : 502;
@@ -332,7 +367,8 @@ async function paymentWebhook(req, res) {
 
   try {
     const transaction = await verifyProviderCharge(chargeId, found.rows[0]);
-    await adminApi.transitionChargeOrder(chargeId, transaction.status);
+    const updated = await adminApi.transitionChargeOrder(chargeId, transaction.status);
+    if (updated?.status === 'paid') sendConfirmationEmailIfNeeded(updated.id).catch(() => {});
     return json(res, 200, { received: true });
   } catch {
     return json(res, 502, { error: 'Não foi possível validar a notificação com o provedor.' });

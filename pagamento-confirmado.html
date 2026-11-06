@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no">
+  <title>Pagamento confirmado | Academia Gaviões</title>
+  <!--
+    TEMPLATE DE E-MAIL TRANSACIONAL
+    Substitua os placeholders {{...}} pelo seu sistema de envio antes de disparar.
+    Este arquivo não usa JavaScript, CSS externo ou recursos incompatíveis com e-mail.
+  -->
+</head>
+<body style="margin:0;padding:0;background-color:#0d0c0f;color:#ffffff;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+    Seu pagamento foi confirmado. Confira os detalhes da sua matrícula Gaviões.
+  </div>
+
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;margin:0;padding:0;background-color:#0d0c0f;">
+    <tr>
+      <td align="center" style="padding:0 12px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:680px;margin:0 auto;">
+          <!-- Cabeçalho -->
+          <tr>
+            <td style="padding:28px 24px;border-bottom:1px solid #302c32;background-color:#0d0c0f;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td align="left" valign="middle">
+                    <a href="https://www.academiagavioes.com.br" target="_blank" style="text-decoration:none;">
+                      <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663992497361/MnOAlFcPMLPNyMzv.webp" width="154" alt="Academia Gaviões" style="display:block;width:154px;max-width:100%;height:auto;border:0;">
+                    </a>
+                  </td>
+                  <td align="right" valign="middle" style="color:#817a84;font-size:10px;line-height:15px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;">
+                    <span style="color:#817a84;">TRANSAÇÃO</span><br>
+                    <strong style="color:#ffffff;font-size:11px;letter-spacing:1px;">GAVIÕES 24H</strong>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Confirmação, alinhada à tela final da matrícula -->
+          <tr>
+            <td align="center" style="padding:54px 24px 44px;background-color:#111015;">
+              <table role="presentation" width="92" height="92" cellspacing="0" cellpadding="0" border="0" style="width:92px;height:92px;border:3px solid #2fd27a;border-radius:50%;background-color:#17b55b;">
+                <tr><td align="center" valign="middle" style="color:#ffffff;font-size:48px;line-height:92px;font-weight:bold;">✓</td></tr>
+              </table>
+              <p style="margin:25px 0 0;color:#f1c928;font-size:10px;line-height:14px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">CONFIRMAÇÃO PIX</p>
+              <h1 style="margin:12px 0 0;color:#ffffff;font-size:48px;line-height:48px;font-weight:800;letter-spacing:-2px;text-transform:uppercase;">Pagamento<br><span style="color:#e30613;">confirmado.</span></h1>
+              <p style="margin:22px auto 0;max-width:440px;color:#aaa5aa;font-size:16px;line-height:25px;">Tudo certo, <strong style="color:#ffffff;">{{customer_name}}</strong>. Confira os próximos passos com a equipe da unidade.</p>
+              <p style="margin:22px 0 0;color:#aaa3ad;font-size:12px;line-height:18px;">Valor pago</p>
+              <p style="margin:4px 0 0;color:#ffffff;font-size:28px;line-height:32px;font-weight:bold;">{{amount_paid}}</p>
+              <a href="{{support_url}}" target="_blank" style="display:inline-block;margin-top:24px;color:#ffffff;font-size:11px;line-height:16px;font-weight:bold;letter-spacing:1px;text-decoration:none;text-transform:uppercase;border-bottom:1px solid #e30613;padding-bottom:7px;">Falar no WhatsApp&nbsp; · &nbsp;(11) 92221-4270</a>
+            </td>
+          </tr>
+
+          <!-- Comprovante -->
+          <tr>
+            <td style="padding:0 24px 28px;background-color:#111015;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#1c1920;border:1px solid #302c32;">
+                <tr>
+                  <td style="padding:28px 24px 8px;">
+                    <p style="margin:0 0 14px;color:#8e8891;font-size:10px;line-height:14px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;">
+                      <span style="color:#f1c928;">◆</span>&nbsp;&nbsp;COMPROVANTE DA MATRÍCULA
+                    </p>
+                    <h2 style="margin:0;color:#ffffff;font-size:34px;line-height:34px;font-weight:bold;letter-spacing:-1.5px;text-transform:uppercase;">Seu pedido<br>está registrado.</h2>
+                    <p style="margin:13px 0 20px;color:#9c96a0;font-size:13px;line-height:20px;">Confira os detalhes da compra e mantenha este resumo para falar com a equipe da Gaviões quando precisar.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 24px 10px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #39343b;">
+                      <tr>
+                        <td style="padding:14px 0;border-bottom:1px solid #39343b;color:#8e8792;font-size:13px;line-height:18px;">Aluno</td>
+                        <td align="right" style="padding:14px 0;border-bottom:1px solid #39343b;color:#ffffff;font-size:13px;line-height:18px;font-weight:bold;">{{customer_name}}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:14px 0;border-bottom:1px solid #39343b;color:#8e8792;font-size:13px;line-height:18px;">Unidade</td>
+                        <td align="right" style="padding:14px 0;border-bottom:1px solid #39343b;color:#ffffff;font-size:13px;line-height:18px;font-weight:bold;">{{unit_name}}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:14px 0;border-bottom:1px solid #39343b;color:#8e8792;font-size:13px;line-height:18px;">Plano</td>
+                        <td align="right" style="padding:14px 0;border-bottom:1px solid #39343b;color:#ffffff;font-size:13px;line-height:18px;font-weight:bold;">{{plan_name}}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:14px 0;border-bottom:1px solid #39343b;color:#8e8792;font-size:13px;line-height:18px;">Forma de pagamento</td>
+                        <td align="right" style="padding:14px 0;border-bottom:1px solid #39343b;color:#ffffff;font-size:13px;line-height:18px;font-weight:bold;">Pix</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:14px 0;border-bottom:1px solid #39343b;color:#8e8792;font-size:13px;line-height:18px;">Data da confirmação</td>
+                        <td align="right" style="padding:14px 0;border-bottom:1px solid #39343b;color:#ffffff;font-size:13px;line-height:18px;font-weight:bold;">{{confirmed_at}}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:20px 0 16px;color:#c0b8c2;font-size:13px;line-height:18px;font-weight:bold;">Valor pago</td>
+                        <td align="right" style="padding:20px 0 16px;color:#f1c928;font-size:24px;line-height:28px;font-weight:bold;">{{amount_paid}}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:5px 24px 24px;color:#756e79;font-size:10px;line-height:15px;">
+                    Pagamento processado com segurança pela Gaviões.<br>
+                    <span style="font-family:monospace;color:#aaa3ad;">ID da transação: {{transaction_id}}</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Próximos passos -->
+          <tr>
+            <td style="padding:0 24px 28px;background-color:#111015;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#1c1920;border:1px solid #302c32;">
+                <tr>
+                  <td style="padding:26px 24px 8px;">
+                    <h2 style="margin:0;color:#ffffff;font-size:30px;line-height:31px;font-weight:bold;letter-spacing:-1px;text-transform:uppercase;">Próximos passos.</h2>
+                    <p style="margin:12px 0 18px;color:#aaa3ad;font-size:13px;line-height:20px;">A unidade está pronta para orientar você sobre acesso, horários e início dos treinos.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 24px 24px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td width="40" valign="top" style="padding:14px 0;border-top:1px solid #39343b;color:#e30613;font-size:23px;line-height:25px;font-weight:bold;">01</td>
+                        <td valign="top" style="padding:14px 0;border-top:1px solid #39343b;"><strong style="color:#ffffff;font-size:13px;line-height:18px;">Separe seus documentos</strong><br><span style="color:#918a95;font-size:11px;line-height:17px;">Leve um documento com foto ao visitar a unidade.</span></td>
+                      </tr>
+                      <tr>
+                        <td width="40" valign="top" style="padding:14px 0;border-top:1px solid #39343b;color:#e30613;font-size:23px;line-height:25px;font-weight:bold;">02</td>
+                        <td valign="top" style="padding:14px 0;border-top:1px solid #39343b;"><strong style="color:#ffffff;font-size:13px;line-height:18px;">Fale com a unidade</strong><br><span style="color:#918a95;font-size:11px;line-height:17px;">A equipe confirma os detalhes da sua matrícula.</span></td>
+                      </tr>
+                      <tr>
+                        <td width="40" valign="top" style="padding:14px 0;border-top:1px solid #39343b;color:#e30613;font-size:23px;line-height:25px;font-weight:bold;">03</td>
+                        <td valign="top" style="padding:14px 0;border-top:1px solid #39343b;"><strong style="color:#ffffff;font-size:13px;line-height:18px;">Comece no seu ritmo</strong><br><span style="color:#918a95;font-size:11px;line-height:17px;">Seu próximo treino começa aqui.</span></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td style="padding:0 24px 44px;background-color:#111015;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#e30613;">
+                <tr>
+                  <td style="padding:22px 24px;">
+                    <p style="margin:0;color:#ffd9dc;font-size:9px;line-height:13px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;">PRECISA DE AJUDA?</p>
+                    <p style="margin:7px 0 0;color:#ffffff;font-size:15px;line-height:21px;font-weight:bold;">Fale com a equipe da Gaviões.</p>
+                  </td>
+                  <td align="right" valign="middle" style="padding:22px 24px;">
+                    <a href="{{support_url}}" target="_blank" style="display:inline-block;padding:12px 14px;background-color:#111015;color:#ffffff;text-decoration:none;font-size:10px;line-height:13px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;">Falar agora</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Rodapé -->
+          <tr>
+            <td style="padding:28px 24px 34px;border-top:1px solid #302c32;background-color:#0d0c0f;color:#756e79;font-size:10px;line-height:17px;">
+              <a href="https://www.academiagavioes.com.br" target="_blank" style="display:inline-block;text-decoration:none;">
+                <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663992497361/MnOAlFcPMLPNyMzv.webp" width="138" alt="Academia Gaviões" style="display:block;width:138px;max-width:100%;height:auto;border:0;">
+              </a>
+              <p style="margin:16px 0 0;">GAVIÕES 24H · Força, disciplina e liberdade.</p>
+              <p style="margin:5px 0 0;">Você recebeu este e-mail porque concluiu uma transação na Academia Gaviões.</p>
+              <p style="margin:12px 0 0;"><a href="https://www.academiagavioes.com.br/politica-de-privacidade" target="_blank" style="color:#aaa3ad;text-decoration:underline;">Política de privacidade</a></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -15,6 +15,8 @@ Site institucional da Academia Gaviões 24h com checkout Pix PushinPay, painel a
 - `admin-api.js`: autenticação, pedidos, exportação, SSE e Web Push.
 - `database.js` e `admin-schema.sql`: PostgreSQL e criação idempotente das tabelas administrativas.
 - `payment-rules.js`: preços aceitos pelo servidor e validações compartilhadas.
+- `brevo-email.js`: envio do e-mail de confirmação pela API Transactional da Brevo.
+- `pagamento-confirmado.html`: corpo HTML do e-mail transacional pós-pagamento.
 
 ## Desenvolvimento e produção
 
@@ -39,10 +41,19 @@ Configure os valores em **Render → serviço do site → Environment**; nunca o
 - `PUSHINPAY_API_URL`: opcional; padrão `https://api.pushinpay.com.br`. Não use `https://app.pushinpay.com.br`, que é o portal web da conta, não a API.
 - `PUBLIC_BASE_URL`: domínio HTTPS público do próprio site; a PushinPay usa `/api/payments/pix/webhook` para avisar mudanças.
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_SUBJECT`: par/chave e contato usados para Web Push. A chave privada fica apenas no ambiente do servidor.
+- `BREVO_API_KEY`: chave da API Transactional da Brevo; nunca versione.
+- `BREVO_SENDER_EMAIL`: remetente validado na Brevo.
+- `BREVO_SENDER_NAME`: nome exibido no remetente, por exemplo `Academia Gaviões`.
+- `BREVO_REPLY_TO`: endereço que recebe respostas dos alunos.
+- `BREVO_SUPPORT_URL`: link usado no botão de suporte do e-mail.
 - `PORT`: fornecida automaticamente pelo Render; padrão local 3000.
 - `PGSSLMODE`: opcional, configure `require` somente se a conexão do PostgreSQL exigir TLS.
 
 O arquivo `.env.example` lista os nomes, sem conter credenciais reais.
+
+### E-mail de pagamento confirmado
+
+Depois que a PushinPay é validada e o pedido muda para `paid`, o servidor renderiza `pagamento-confirmado.html` com os dados do pedido e envia a mensagem pelo endpoint `/v3/smtp/email` da Brevo. O banco registra o início e a conclusão do envio para evitar mensagens duplicadas. Se a Brevo não estiver configurada ou estiver indisponível, o pagamento não é desfeito; o motivo fica no log do servidor para reprocessamento.
 
 ## Pix e limites atuais do checkout
 
