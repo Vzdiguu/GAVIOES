@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Escolha seu plano e avance na matrícula Gaviões.">
+  <title>Matrícula | Academia Gaviões</title>
+  <link rel="stylesheet" href="/matricula.css?v=20261105-4">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Academia Gaviões">
+  <meta property="og:title" content="Academia Gaviões 24h">
+  <meta property="og:description" content="Escolha onde treinar e comece no seu ritmo. Encontre sua unidade Gaviões.">
+  <meta property="og:image" content="https://www.academiagavioes.com.br/assets/brand/gavioes-share.webp">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://www.academiagavioes.com.br/assets/brand/gavioes-share.webp">
+</head>
+<body class="matricula-page">
+  <header class="checkout-header">
+    <a class="checkout-brand" href="/" aria-label="Voltar para a Academia Gaviões">
+      <img src="/assets/brand/gavioes-logo-lockup-cropped.webp" alt="Academia Gaviões">
+    </a>
+    <div class="header-mark"><span>MATRÍCULA</span><strong>GAVIÕES 24H</strong></div>
+    <a class="checkout-back" href="/">Voltar</a>
+  </header>
+
+  <main class="checkout-shell">
+    <section class="checkout-hero">
+      <div class="hero-copy">
+        <h1><span class="title-main">Sua matrícula</span><br><em>começa aqui.</em></h1>
+        <p class="hero-lead">Escolha seu ritmo, encontre o plano certo e dê o próximo passo para treinar na Gaviões.</p>
+      </div>
+    </section>
+
+    <div class="checkout-layout">
+      <section class="checkout-main" aria-labelledby="flow-title">
+        <nav class="checkout-progress" id="stepper" aria-label="Etapas da matrícula">
+          <button class="checkout-step is-active" data-step="1" type="button"><b>01</b><span>Plano</span></button>
+          <i></i>
+          <button class="checkout-step" data-step="2" type="button"><b>02</b><span>Seus dados</span></button>
+          <i></i>
+          <button class="checkout-step" data-step="3" type="button"><b>03</b><span>Pagamento</span></button>
+        </nav>
+
+        <section class="checkout-card">
+          <div id="flow-title" class="checkout-heading"></div>
+          <div id="step-content" class="step-content"></div>
+          <div class="checkout-actions">
+            <button class="checkout-button checkout-button-light" id="back-button" type="button">Voltar</button>
+            <button class="checkout-button checkout-button-primary" id="next-button" type="button">Continuar</button>
+          </div>
+        </section>
+      </section>
+
+      <aside class="checkout-summary" aria-label="Resumo da matrícula">
+        <div class="summary-heading"><span>SEU PEDIDO</span></div>
+        <div class="summary-content" id="summary-content"></div>
+        <div class="summary-divider"></div>
+        <div class="summary-price"><span>Total mensal</span><strong id="summary-price">R$ 0,00</strong></div>
+        <ul class="summary-trust"><li>Acesso à unidade escolhida</li><li>Planos Gaviões 24h</li><li>Condições exibidas antes da confirmação</li></ul>
+        <p class="summary-footnote">Você mantém o controle em cada etapa da sua escolha.</p>
+      </aside>
+    </div>
+  </main>
+  <div class="checkout-toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="contract-modal" id="contract-modal" hidden aria-hidden="true"><div class="contract-modal-backdrop" data-contract-close></div><section class="contract-modal-panel" role="dialog" aria-modal="true" aria-labelledby="contract-modal-title"><button class="contract-modal-close" type="button" data-contract-close aria-label="Fechar contrato"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button><div id="contract-modal-content"></div></section></div>
+  <script src="/vendor/gsap.min.js"></script>
+  <script src="/matricula.js"></script>
+</body>
+</html>
