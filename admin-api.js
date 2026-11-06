@@ -273,7 +273,7 @@ async function sendPush(eventType, order) {
   const result = await database.query('SELECT subscription FROM admin_push_subscriptions');
   const notification = eventType === 'payment_confirmed'
     ? { eventId: `${order.id}:payment_confirmed`, type: 'payment_confirmed', title: 'Pagamento confirmado', body: 'Matrícula confirmada', url: '/painel/#matriculas', tag: `${order.id}:paid` }
-    : { eventId: `${order.id}:new_order`, type: 'new_order', title: 'Novo Pix gerado', body: 'Matrícula pendente', url: '/painel/#matriculas', tag: `${order.id}:new` };
+    : { eventId: `${order.id}:new_order`, type: 'new_order', title: 'Pix gerado', body: 'Matrícula pendente', url: '/painel/#matriculas', tag: `${order.id}:new` };
   const payload = JSON.stringify(notification);
   await Promise.allSettled(result.rows.map(async row => {
     const subscription = row.subscription;
