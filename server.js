@@ -233,9 +233,11 @@ function serveStatic(req, res, pathname) {
   if (!fs.existsSync(filename)) return json(res, 404, { error: 'Página não encontrada.' });
   const body = fs.readFileSync(filename);
   const status = filename.endsWith('404.html') && !resolveStaticFile(pathname) ? 404 : 200;
+  const noCache = pathname === '/painel' || pathname.startsWith('/painel/');
   res.writeHead(status, {
     'content-type': MIME_TYPES[path.extname(filename).toLowerCase()] || 'application/octet-stream',
     'content-length': body.length,
+    ...(noCache ? { 'cache-control': 'no-cache, max-age=0, must-revalidate' } : {}),
   });
   res.end(body);
 }

@@ -1,5 +1,5 @@
 'use strict';
-const CACHE = 'gavioes-shell-v3';
+const CACHE = 'gavioes-shell-v4';
 const CORE = ['/painel/', '/painel/index.html', '/painel/manifest.webmanifest', '/painel/offline.html', '/painel/icons/app-192.png', '/painel/icons/app-512.png', '/painel/icons/app-maskable-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
@@ -12,7 +12,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/') || url.pathname.startsWith('/manus-storage/')) return;
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).then(response => {
+    event.respondWith(fetch(request, {cache: 'no-store'}).then(response => {
       if (response.ok) caches.open(CACHE).then(cache => cache.put('/painel/index.html', response.clone()));
       return response;
     }).catch(async () => (await caches.match('/painel/index.html')) || (await caches.match('/painel/offline.html'))));
