@@ -1,6 +1,6 @@
 (() => {
   const gsap = window.gsap;
-  const plans = [
+  const standardPlans = [
     {
       id:'start_monthly',name:'START RECORRENTE MENSAL',tag:'Plano mensal',note:'Vigência mensal · unidade de cadastro',desc:'Mensalidade flexível para treinar na unidade escolhida.',price:'R$ 119,90',value:119.9,period:'/mês',priceLabel:'Mensalidade',featured:true,
       vigencia:'Vigência mensal, com renovação por ciclos mensais.',escopo:'Acesso somente à unidade de cadastro.',
@@ -38,11 +38,57 @@
       cancelamento:'O adicional pode ser cancelado mediante solicitação à unidade, sem multa ou taxa de cancelamento.'
     }
   ];
+  const premiumPlansForUnit = unitName => [
+    {
+      id:'premium_start_recurring',name:'START PREMIUM · RECORRENTE MENSAL',tag:'Sem fidelidade',note:'Cobrança mensal · sem fidelidade',desc:`Plano recorrente para treinar 24 horas na unidade ${unitName}.`,price:'R$ 259,00',value:259,period:'/mês',priceLabel:'Mensalidade recorrente',featured:true,
+      vigencia:'Vigência por ciclos mensais, com cobrança recorrente e sem fidelidade.',escopo:`Acesso 24 horas à unidade ${unitName}.`,
+      features:[`Acesso 24 horas à unidade ${unitName}.`,'Musculação e todas as aulas coletivas inclusas.','Lutas inclusas: Muay Thai e Jiu-Jitsu.','Sem taxa de matrícula.','Wi-Fi gratuito.'],
+      cancelamento:'O plano não tem fidelidade. Solicitações de cancelamento devem ser encaminhadas à unidade para encerramento das cobranças futuras.'
+    },
+    {
+      id:'premium_start_annual',name:'START PREMIUM · ANUAL',tag:'Fidelidade de 12 meses',note:'12x R$ 249,00 · total R$ 2.988,00',desc:`Plano anual para treinar 24 horas na unidade ${unitName}.`,price:'R$ 249,00',value:249,period:'/mês',priceLabel:'Mensalidade no plano anual',totalPrice:'R$ 2.988,00',
+      vigencia:'Vigência contratual de 12 meses, com 12 mensalidades de R$ 249,00.',escopo:`Acesso 24 horas à unidade ${unitName}.`,
+      features:[`Acesso 24 horas à unidade ${unitName}.`,'Musculação e todas as aulas coletivas inclusas.','Lutas inclusas: Muay Thai e Jiu-Jitsu.','Sem taxa de matrícula.','Wi-Fi gratuito.'],
+      cancelamento:'O plano anual prevê permanência de 12 meses, conforme a oferta. Solicitações de encerramento devem ser encaminhadas à unidade e observar as condições aceitas e a legislação aplicável.'
+    },
+    {
+      id:'premium_plus_recurring',name:'PLUS PREMIUM · RECORRENTE MENSAL',tag:'Sem fidelidade',note:'Cobrança mensal · sem fidelidade',desc:'Plano recorrente com acesso a toda a rede Gaviões.',price:'R$ 309,00',value:309,period:'/mês',priceLabel:'Mensalidade recorrente',
+      vigencia:'Vigência por ciclos mensais, com cobrança recorrente e sem fidelidade.',escopo:'Acesso a toda a rede Gaviões, inclusive unidades premium, em qualquer horário.',
+      features:[`Tudo do START Premium: acesso 24 horas à unidade ${unitName}, musculação, aulas coletivas, Muay Thai e Jiu-Jitsu.`,'Acesso a toda a rede Gaviões, inclusive unidades premium.','Treine em qualquer unidade, em qualquer horário.','Sem taxa de matrícula.','Wi-Fi gratuito.'],
+      cancelamento:'O plano não tem fidelidade. Solicitações de cancelamento devem ser encaminhadas à unidade para encerramento das cobranças futuras.'
+    },
+    {
+      id:'premium_plus_annual',name:'PLUS PREMIUM · ANUAL',tag:'Fidelidade de 12 meses',note:'1º mês: R$ 199,00 · depois: R$ 289,00/mês · total R$ 3.378,00',desc:'Plano anual Premium com acesso a toda a rede Gaviões.',price:'R$ 289,00',value:199,chargePrice:'R$ 199,00',period:'/mês',priceLabel:'Mensalidade no plano anual',totalPrice:'R$ 3.378,00',
+      contractPriceClause:'A primeira mensalidade promocional é de R$ 199,00. As 11 mensalidades seguintes são de R$ 289,00 cada, totalizando R$ 3.378,00 no período contratual de 12 meses.',
+      vigencia:'Vigência contratual de 12 meses. A primeira mensalidade tem preço promocional de R$ 199,00, seguida de 11 mensalidades de R$ 289,00.',escopo:'Acesso a toda a rede Gaviões, inclusive unidades premium, em qualquer horário.',
+      features:[`Tudo do START Premium: acesso 24 horas à unidade ${unitName}, musculação, aulas coletivas, Muay Thai e Jiu-Jitsu.`,'Acesso a toda a rede Gaviões, inclusive unidades premium.','Treine em qualquer unidade, em qualquer horário.','Sem taxa de matrícula.','Wi-Fi gratuito.'],
+      cancelamento:'O plano anual prevê permanência de 12 meses, conforme a oferta. Solicitações de encerramento devem ser encaminhadas à unidade e observar as condições aceitas e a legislação aplicável.'
+    },
+    {
+      id:'premium_day_pass',name:'DIÁRIA · 1 ACESSO AVULSO',tag:'Uso avulso',note:'Pagamento à vista · sem matrícula',desc:'Uma entrada avulsa para treinar na unidade escolhida.',price:'R$ 60,00',value:60,period:'pagamento único',priceLabel:'Preço único',
+      vigencia:'Acesso avulso de um dia, limitado a uma entrada.',escopo:`Um acesso avulso à unidade ${unitName}.`,
+      features:['Um acesso avulso à academia.','Pagamento à vista.','Sem taxa de matrícula.'],
+      cancelamento:'Produto avulso de uso único. Dúvidas sobre utilização devem ser encaminhadas à unidade antes do acesso.'
+    },
+    {
+      id:'premium_bioimpedance',name:'BIOIMPEDÂNCIA AVULSA',tag:'Avaliação única',note:'Pagamento à vista · serviço avulso',desc:'Uma avaliação avulsa de bioimpedância.',price:'R$ 80,00',value:80,period:'pagamento único',priceLabel:'Preço único',
+      vigencia:'Serviço avulso, contratado para uma avaliação única.',escopo:'A contratação corresponde a uma avaliação de bioimpedância e não constitui plano mensal de academia.',
+      features:['Uma avaliação de bioimpedância.','Avaliação única, sem recorrência.','Pagamento à vista.'],
+      cancelamento:'Serviço avulso. Dúvidas sobre agendamento ou utilização devem ser encaminhadas à unidade.'
+    }
+  ];
   const params = new URLSearchParams(location.search);
   const slugTitle = slug => String(slug || '').replace(/^(sp|ce|df|ba|go|pe|pr|se|to|pa)/i,'').replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()).trim() || 'Sua unidade';
+  const premiumUnitNamesById = Object.freeze({spvilaolimpia:'Vila Olímpia',sppinheiros:'Pinheiros'});
   const queryUnit = params.get('unidade');
   const saved = (() => { try { return JSON.parse(sessionStorage.getItem('gavioesCheckoutState') || 'null') || {}; } catch (_) { return {}; } })();
-  const unit = queryUnit ? {id:queryUnit,name:params.get('nome') || slugTitle(queryUnit),meta:'Unidade Gaviões 24 horas'} : (saved.unit || null);
+  const storedUnit=saved.unit||null;
+  const storedUnitId=String(storedUnit?.id||'').toLowerCase();
+  const unit = queryUnit
+    ? {id:queryUnit,name:params.get('nome') || premiumUnitNamesById[String(queryUnit).toLowerCase()] || slugTitle(queryUnit),meta:'Unidade Gaviões 24 horas'}
+    : (storedUnit ? {...storedUnit,name:premiumUnitNamesById[storedUnitId] || storedUnit.name} : null);
+  const isPremiumUnit = candidate => ['spvilaolimpia','sppinheiros'].includes(String(candidate?.id||'').toLowerCase());
+  const plans = unit && isPremiumUnit(unit) ? premiumPlansForUnit(unit.name) : standardPlans;
   const savedPlanId=String(saved.plan?.id||'');
   const savedPlan=plans.find(plan=>plan.id===savedPlanId)||null;
   const legacyPlan=Boolean(savedPlanId)&&!savedPlan;
@@ -55,7 +101,6 @@
     person:queryUnit?{name:'',email:'',phone:'',cpf:''}:(saved.person||{name:'',email:'',phone:'',cpf:''}),
     errors:{},payment:'pix',confirmed:queryUnit?false:(!legacyPlan&&!!saved.confirmed&&saved.payment==='pix')
   };
-
   const content = document.querySelector('#step-content');
   const heading = document.querySelector('#flow-title');
   const summary = document.querySelector('#summary-content');
@@ -143,11 +188,11 @@
   const contractDocument = p => {
     const benefits=p.features.map(item=>`<li>${esc(item)}</li>`).join('');
     const customer=state.person;
-    const priceClause=p.totalPrice
+    const priceClause=p.contractPriceClause || (p.totalPrice
       ? `O preço é de ${esc(p.price)} por mês durante 12 meses, totalizando ${esc(p.totalPrice)} no período contratado.`
       : p.period==='/mês'
         ? `O preço é de ${esc(p.price)} por mês, conforme o ciclo indicado nesta oferta.`
-        : `O preço total da aquisição é de ${esc(p.price)}, em pagamento único.`;
+        : `O preço total da aquisição é de ${esc(p.price)}, em pagamento único.`);
     return `<article class="contract-document">
       <p class="contract-document-kicker">DOCUMENTO INTEGRAL DE CONTRATAÇÃO</p>
       <h1 id="contract-modal-title">Contrato de adesão aos serviços</h1>
@@ -335,7 +380,7 @@
   /* ---------- etapa 3: pagamento ---------- */
   function renderPayment(){
     heading.innerHTML='<h2>Revise e finalize.</h2><p>Confira suas escolhas e selecione a forma de pagamento para concluir o próximo passo.</p>';
-    content.innerHTML=`<div class="review-card"><div class="review-row"><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div class="review-row"><span>Plano</span><strong>${esc(state.plan?.name || 'Não selecionado')}</strong></div><div class="review-row"><span>Aluno</span><strong>${esc(state.person.name || 'Não informado')}</strong></div><div class="review-row"><span>Valor desta cobrança</span><strong>${state.plan?.price || 'R$ 0,00'}</strong></div></div><div class="payment-grid">${[['pix','Pix','Pagamento via Pix',false],['card','Cartão','Indisponível: integração não configurada',true]].map(([v,t,s,disabled])=>`<label class="payment-option ${disabled?'is-disabled':''}"><input type="radio" name="payment" value="${v}" ${state.payment===v?'checked':''} ${disabled?'disabled':''}><span><strong>${t}</strong><small>${s}</small></span></label>`).join('')}</div><div class="payment-note">O pagamento será processado via Pix. Acompanhe nesta tela a confirmação da cobrança.</div><section class="contract-box" aria-label="Termo do contrato"><div class="term-cta">${termButton(state.plan)}</div></section><label class="checkout-check"><input id="review-ok" type="checkbox"><span>Confirmo que revisei meus dados, plano e unidade escolhida.</span></label><label class="checkout-check"><input id="contract-ok" type="checkbox"><span>Li e aceito o termo do contrato do plano ${esc(state.plan?.name||'selecionado')}.</span></label>`;
+    content.innerHTML=`<div class="review-card"><div class="review-row"><span>Unidade</span><strong>${esc(state.unit.name)}</strong></div><div class="review-row"><span>Plano</span><strong>${esc(state.plan?.name || 'Não selecionado')}</strong></div><div class="review-row"><span>Aluno</span><strong>${esc(state.person.name || 'Não informado')}</strong></div><div class="review-row"><span>Valor desta cobrança</span><strong>${state.plan?.chargePrice || state.plan?.price || 'R$ 0,00'}</strong></div></div><div class="payment-grid">${[['pix','Pix','Pagamento via Pix',false],['card','Cartão','Indisponível: integração não configurada',true]].map(([v,t,s,disabled])=>`<label class="payment-option ${disabled?'is-disabled':''}"><input type="radio" name="payment" value="${v}" ${state.payment===v?'checked':''} ${disabled?'disabled':''}><span><strong>${t}</strong><small>${s}</small></span></label>`).join('')}</div><div class="payment-note">O pagamento será processado via Pix. Acompanhe nesta tela a confirmação da cobrança.</div><section class="contract-box" aria-label="Termo do contrato"><div class="term-cta">${termButton(state.plan)}</div></section><label class="checkout-check"><input id="review-ok" type="checkbox"><span>Confirmo que revisei meus dados, plano e unidade escolhida.</span></label><label class="checkout-check"><input id="contract-ok" type="checkbox"><span>Li e aceito o termo do contrato do plano ${esc(state.plan?.name||'selecionado')}.</span></label>`;
     content.querySelectorAll('input[name="payment"]').forEach(el=>el.addEventListener('change',()=>{state.payment=el.value;if(gsap)gsap.fromTo(el.closest('.payment-option'),{scale:.96},{scale:1,duration:.5,ease:'back.out(3)'})}));
   }
 
@@ -408,7 +453,7 @@
     const whatsappUrl=`https://wa.me/5511922214270?text=${encodeURIComponent('Olá! Minha matrícula foi confirmada e gostaria de saber os próximos passos.')}`;
     const ticks=Array.from({length:12},(_,k)=>{const a=k*Math.PI/6,c=Math.cos(a),s2=Math.sin(a);return `<line x1="${(60+c*70).toFixed(1)}" y1="${(60+s2*70).toFixed(1)}" x2="${(60+c*84).toFixed(1)}" y2="${(60+s2*84).toFixed(1)}"/>`}).join('');
     const title='Pagamento confirmado.'.split(' ').map(w=>`<span class="word">${[...w].map(ch=>`<span class="ltr">${ch}</span>`).join('')}</span>`).join(' ');
-    content.innerHTML=`<div class="success-screen"><div class="seal-wrap"><i class="seal-glow"></i><i class="seal-ripple"></i><i class="seal-ripple"></i><svg class="paid-seal" viewBox="-32 -32 184 184" role="img" aria-label="Pagamento confirmado"><g class="seal-ticks">${ticks}</g><circle class="seal-ring" cx="60" cy="60" r="57"/><circle class="seal-fill" cx="60" cy="60" r="50"/><path class="seal-check" d="M37 62l16 16 31-35"/></svg></div><h2 aria-label="Pagamento confirmado."><span aria-hidden="true">${title}</span></h2><p class="paid-amount"><span>Valor pago</span><b>${state.plan.price}</b></p><p class="paid-note">Tudo certo, ${first}. Confira os próximos passos com a equipe da unidade.</p><a class="empty-link" href="${whatsappUrl}" target="_blank" rel="noopener noreferrer">Falar no WhatsApp · (11) 92221-4270</a></div>`;
+    content.innerHTML=`<div class="success-screen"><div class="seal-wrap"><i class="seal-glow"></i><i class="seal-ripple"></i><i class="seal-ripple"></i><svg class="paid-seal" viewBox="-32 -32 184 184" role="img" aria-label="Pagamento confirmado"><g class="seal-ticks">${ticks}</g><circle class="seal-ring" cx="60" cy="60" r="57"/><circle class="seal-fill" cx="60" cy="60" r="50"/><path class="seal-check" d="M37 62l16 16 31-35"/></svg></div><h2 aria-label="Pagamento confirmado."><span aria-hidden="true">${title}</span></h2><p class="paid-amount"><span>Valor pago</span><b>${state.plan.chargePrice||fmt(state.plan.value)}</b></p><p class="paid-note">Tudo certo, ${first}. Confira os próximos passos com a equipe da unidade.</p><a class="empty-link" href="${whatsappUrl}" target="_blank" rel="noopener noreferrer">Falar no WhatsApp · (11) 92221-4270</a></div>`;
     next.style.display='none'; document.querySelector('.checkout-actions').style.display='none';
     if(!gsap||!fresh||reduceMotion)return;
     const sc=content.querySelector('.success-screen'), q=sel=>sc.querySelector(sel), qa=sel=>sc.querySelectorAll(sel);
@@ -436,7 +481,7 @@
       .fromTo(qa('.seal-ripple'),{opacity:.55,scale:1},{opacity:0,scale:2.6,duration:1.6,ease:'power2.out',stagger:.3},2.6)           // ondas
       .to(qa('.ltr'),{opacity:1,y:0,duration:.55,ease:'power3.out',stagger:.04},2.85)                  // título letra por letra
       .to(rest,{opacity:1,y:0,duration:.55,ease:'power3.out',stagger:.14},3.4)
-      .to(counter,{v:state.plan.value,duration:1.4,ease:'power2.out',onUpdate:()=>{amountEl.textContent=fmt(counter.v)},onComplete:()=>{amountEl.textContent=state.plan.price}},3.4);
+      .to(counter,{v:state.plan.value,duration:1.4,ease:'power2.out',onUpdate:()=>{amountEl.textContent=fmt(counter.v)},onComplete:()=>{amountEl.textContent=state.plan.chargePrice||fmt(state.plan.value)}},3.4);
   }
 
   /* ---------- fluxo ---------- */

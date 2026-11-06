@@ -7,6 +7,37 @@ const PLAN_CATALOG = Object.freeze({
   bioimpedance_monthly: Object.freeze({ name: 'BIOIMPEDÂNCIA RECORRENTE 1X/MÊS', valueCents: 1990 }),
 });
 
+const PREMIUM_PLAN_CATALOG = Object.freeze({
+  premium_start_annual: Object.freeze({ name: 'START PREMIUM · ANUAL', valueCents: 24900, monthlyCents: 24900 }),
+  premium_start_recurring: Object.freeze({ name: 'START PREMIUM · RECORRENTE MENSAL', valueCents: 25900, monthlyCents: 25900 }),
+  premium_plus_annual: Object.freeze({ name: 'PLUS PREMIUM · ANUAL', valueCents: 19900, monthlyCents: 28900 }),
+  premium_plus_recurring: Object.freeze({ name: 'PLUS PREMIUM · RECORRENTE MENSAL', valueCents: 30900, monthlyCents: 30900 }),
+  premium_day_pass: Object.freeze({ name: 'DIÁRIA · 1 ACESSO AVULSO', valueCents: 6000 }),
+  premium_bioimpedance: Object.freeze({ name: 'BIOIMPEDÂNCIA AVULSA', valueCents: 8000 }),
+});
+
+const PREMIUM_UNIT_KEYS = Object.freeze({
+  spvilaolimpia: 'vilaolimpia',
+  sppinheiros: 'pinheiros',
+});
+
+function normalizeUnitKey(value) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function getPlanCatalog(unitId, unitName) {
+  const id = String(unitId ?? '').trim().toLowerCase();
+  const unitKey = normalizeUnitKey(unitName);
+  const expectedUnitKey = PREMIUM_UNIT_KEYS[id];
+  if (expectedUnitKey) return unitKey === expectedUnitKey ? PREMIUM_PLAN_CATALOG : null;
+  if (Object.values(PREMIUM_UNIT_KEYS).includes(unitKey)) return null;
+  return PLAN_CATALOG;
+}
+
 function digits(value) {
   return String(value ?? '').replace(/\D/g, '');
 }
@@ -34,4 +65,12 @@ function normalizeProviderStatus(value) {
   return null;
 }
 
-module.exports = { PLAN_CATALOG, digits, isValidCpf, normalizeProviderStatus };
+module.exports = {
+  PLAN_CATALOG,
+  PREMIUM_PLAN_CATALOG,
+  PREMIUM_UNIT_KEYS,
+  getPlanCatalog,
+  digits,
+  isValidCpf,
+  normalizeProviderStatus,
+};

@@ -2,13 +2,13 @@ const crypto = require('node:crypto');
 const { request: httpsRequest } = require('node:https');
 const database = require('./database');
 const adminApi = require('./admin-api');
-const { PLAN_CATALOG, digits, isValidCpf, normalizeProviderStatus } = require('./payment-rules');
+const { getPlanCatalog, digits, isValidCpf, normalizeProviderStatus } = require('./payment-rules');
 
 const PUSHINPAY_API = (process.env.PUSHINPAY_API_URL || 'https://api.pushinpay.com.br').replace(/\/+$/, '');
 const PUSHINPAY_TOKEN = process.env.PUSHINPAY_TOKEN || '';
 const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || '';
 const MAX_BODY = 100_000;
-const TERMS_VERSION = 'checkout-2026-11-06-planos-v3';
+const TERMS_VERSION = 'checkout-2026-11-06-premium-v1';
 
 function json(res, status, payload) {
   const data = JSON.stringify(payload);
@@ -195,13 +195,15 @@ async function createPix(req, res) {
     return json(res, 422, { error: 'Confirme os dados e aceite o termo antes de gerar o Pix.' });
   }
   const planId = String(body.planId || '');
-  const plan = PLAN_CATALOG[planId];
-  if (!plan) return json(res, 422, { error: 'Plano inválido.' });
   const customer = validCustomer(body);
   if (customer.error) return json(res, 422, { error: customer.error });
   const unitId = String(body.unitId || '').trim().slice(0, 120);
   const unitName = String(body.unitName || '').trim().replace(/\s+/g, ' ').slice(0, 120);
   if (!/^[A-Za-z0-9_-]{1,120}$/.test(unitId) || !unitName) return json(res, 422, { error: 'Unidade inválida.' });
+  const catalog = getPlanCatalog(unitId, unitName);
+  if (!catalog) return json(res, 422, { error: 'A unidade informada não confere com o cadastro.' });
+  const plan = catalog[planId];
+  if (!plan) return json(res, 422, { error: 'Esta opção não está disponível para a unidade escolhida.' });
   const requestId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.requestId || '')
     ? String(body.requestId).toLowerCase()
     : crypto.randomUUID();
